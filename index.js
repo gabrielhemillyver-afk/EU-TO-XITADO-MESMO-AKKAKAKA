@@ -13,9 +13,6 @@ TextInputBuilder,
 TextInputStyle
 } = require("discord.js");
 
-const TOKEN = process.env.TOKEN;
-const PREFIX = "!x";
-
 const client = new Client({
 intents: [
 GatewayIntentBits.Guilds,
@@ -24,25 +21,21 @@ GatewayIntentBits.MessageContent
 ]
 });
 
-const paineis = {};
-const suportePaineis = {};
-const carrinhos = {};
+const PREFIX = "!";
+const TOKEN = process.env.TOKEN;
 
-// ========================================
-// READY
-// ========================================
+const paineis = {};
+const tickets = {};
+const carrinhos = {};
 
 client.once("ready", () => {
 console.log(`${client.user.tag} ONLINE`);
 });
 
-// ========================================
-// FUNÇÕES
-// ========================================
-
 function isDono(member) {
 
-const cargo = member.guild.roles.cache.find(
+const cargo =
+member.guild.roles.cache.find(
 r => r.name === "DONO"
 );
 
@@ -82,7 +75,7 @@ const command = args.shift().toLowerCase();
 // !XIT
 // ========================================
 
-if (command === "it") {
+if (command === "xit") {
 
 const cargos = [
 
@@ -108,38 +101,124 @@ color: cargo[1]
 
 }
 
-message.reply("✅ cargos criados");
+const estrutura = [
 
+{
+categoria: "📌 RECEPÇÃO",
+canais: [
+"📢・avisos",
+"👤・crie-seu-painel",
+"🔗・url",
+"🎁・verificação",
+"🎁・rewards",
+"⚙️・atualizações",
+"📨・rede-sociais"
+]
+},
+
+{
+categoria: "❓ FAQ ( LOJA )",
+canais: [
+"⛓️・como-comprar",
+"🌐・site-oficial"
+]
+},
+
+{
+categoria: "📌 IMPORTANTE",
+canais: [
+"📜・termos",
+"📊・avaliação",
+"📊・avaliação-entregues",
+"✅・compras-entregues"
+]
+},
+
+{
+categoria: "🎫 TICKET SUPORTE",
+canais: [
+"👥・ticket",
+"🌟・avaliação-ticket"
+]
+},
+
+{
+categoria: "🍎 CERTIFICADO IOS",
+canais: [
+"☕・certificado・gbox",
+"☕・certificado・esign",
+"☕・certificado・scarlet",
+"☕・certificado・maplesigner"
+]
+},
+
+{
+categoria: "🤖 ANDROID NOVA ATUALIZAÇÃO",
+canais: [
+"🏅・m0d・4pk・andr0id",
+"🏅・ffh4xhg・android",
+"🏅・mod・safe・dripclient",
+"🏅・passador・de・replay・android",
+"🏅・ffh4xlite・android",
+"🏅・ffh4xbypass・android",
+"🏅・proxy・android・external",
+"🏅・pack・e・otimização・full",
+"🏅・combo・apostado・android",
+"🛠️・auxílio・android",
+"🌌・holograma・android",
+"🎛️・painel・legit",
+"🎯・gerador・de・sensi・android"
+]
+},
+
+{
+categoria: "🍎 IPHONE NOVA ATUALIZAÇÃO",
+canais: [
+"🏅・ffh4x・ios・rage",
+"🏅・ffh4x・ios・legit",
+"🏅・ios・safe・menu",
+"🏅・byp4ss・full・iphone",
+"🏅・painel・iphone・safe",
+"🏅・painel・ios・premium",
+"🏅・hspescoco・todos・ios",
+"🏅・ios・drip・premium",
+"🏅・combo・apostador・ios",
+"🏅・proxy・ios・external",
+"🏅・pack・ios・fps",
+"🛠️・auxílio-ios",
+"🌌・holograma・ios",
+"🎯・gerador・de・sensi・ios"
+]
 }
 
-// ========================================
-// !XM
-// ========================================
+];
 
-if (command === "m") {
+for (const item of estrutura) {
 
-if (!isDono(message.member))
-return message.reply("❌ apenas DONO");
+const categoria =
+await message.guild.channels.create({
+name: item.categoria,
+type: ChannelType.GuildCategory
+});
 
-const botao = new ButtonBuilder()
+for (const canal of item.canais) {
 
-.setCustomId("abrir_embed")
-
-.setLabel("📨 Criar Embed")
-
-.setStyle(ButtonStyle.Primary);
-
-const row = new ActionRowBuilder().addComponents(botao);
-
-message.channel.send({
-content: "Clique abaixo",
-components: [row]
+await message.guild.channels.create({
+name: canal,
+type: ChannelType.GuildText,
+parent: categoria.id
 });
 
 }
 
+}
+
+message.reply("✅ servidor criado");
+
+}
+
 // ========================================
-// !XVENDAS
+// !VENDAS
 // ========================================
 
 if (command === "vendas") {
@@ -156,37 +235,25 @@ canalId: "",
 
 titulo: "NOVO PAINEL",
 
-texto: "Configure tudo na engrenagem",
-
-imagem: "",
-
-thumbnail: "",
-
-footer: "",
+texto: "Configure na engrenagem",
 
 cor: "#8000ff",
 
-pix: "",
-
-textoPix: "",
-
 url: "",
 
-tempo: 600000,
+pix: "",
 
 produtos: []
 
 };
 
-const painel = paineis[id];
-
 const embed = new EmbedBuilder()
 
-.setTitle(painel.titulo)
+.setTitle("NOVO PAINEL")
 
-.setDescription(painel.texto)
+.setDescription("Configure na engrenagem")
 
-.setColor(painel.cor);
+.setColor("#8000ff");
 
 const menu = new StringSelectMenuBuilder()
 
@@ -202,7 +269,7 @@ value: "none"
 }
 ]);
 
-const engrenagem = new ButtonBuilder()
+const config = new ButtonBuilder()
 
 .setCustomId(`config_${id}`)
 
@@ -214,9 +281,10 @@ const row1 =
 new ActionRowBuilder().addComponents(menu);
 
 const row2 =
-new ActionRowBuilder().addComponents(engrenagem);
+new ActionRowBuilder().addComponents(config);
 
-const painelMsg = await message.channel.send({
+const painelMsg =
+await message.channel.send({
 embeds: [embed],
 components: [row1, row2]
 });
@@ -227,7 +295,7 @@ paineis[id].canalId = message.channel.id;
 }
 
 // ========================================
-// !XSUP
+// !SUP
 // ========================================
 
 if (command === "sup") {
@@ -237,7 +305,7 @@ return message.reply("❌ apenas DONO");
 
 const id = Date.now().toString();
 
-suportePaineis[id] = {
+tickets[id] = {
 
 mensagemId: "",
 canalId: "",
@@ -246,53 +314,35 @@ titulo: "🎫 SUPORTE",
 
 texto: "Abra suporte abaixo",
 
-cor: "#8000ff",
-
-imagem: ""
+cor: "#8000ff"
 
 };
 
-const painel = suportePaineis[id];
-
 const embed = new EmbedBuilder()
 
-.setTitle(painel.titulo)
+.setTitle("🎫 SUPORTE")
 
-.setDescription(painel.texto)
+.setDescription("Abra suporte abaixo")
 
-.setColor(painel.cor);
+.setColor("#8000ff");
 
 const menu = new StringSelectMenuBuilder()
 
 .setCustomId(`ticket_${id}`)
 
-.setPlaceholder("Selecione uma opção")
+.setPlaceholder("Abrir suporte")
 
 .addOptions([
-
 {
-label: "Suporte",
-description: "Ajuda geral",
-value: "geral"
-},
-
-{
-label: "Suporte Android",
-description: "Ajuda Android",
-value: "android"
-},
-
-{
-label: "Suporte iOS",
-description: "Ajuda iOS",
-value: "ios"
+label: "SUPORTE",
+description: "Abrir ticket",
+value: "ticket"
 }
-
 ]);
 
-const engrenagem = new ButtonBuilder()
+const config = new ButtonBuilder()
 
-.setCustomId(`configsup_${id}`)
+.setCustomId(`config_ticket_${id}`)
 
 .setEmoji("⚙️")
 
@@ -302,26 +352,53 @@ const row1 =
 new ActionRowBuilder().addComponents(menu);
 
 const row2 =
-new ActionRowBuilder().addComponents(engrenagem);
+new ActionRowBuilder().addComponents(config);
 
-const painelMsg = await message.channel.send({
+const painelMsg =
+await message.channel.send({
 embeds: [embed],
 components: [row1, row2]
 });
 
-suportePaineis[id].mensagemId = painelMsg.id;
-suportePaineis[id].canalId = message.channel.id;
+tickets[id].mensagemId = painelMsg.id;
+tickets[id].canalId = message.channel.id;
 
 }
 
 // ========================================
-// LOCK
+// !M
+// ========================================
+
+if (command === "m") {
+
+if (!isDono(message.member))
+return;
+
+const botao = new ButtonBuilder()
+
+.setCustomId("embed_modal")
+
+.setLabel("📨 Criar Embed")
+
+.setStyle(ButtonStyle.Primary);
+
+const row =
+new ActionRowBuilder().addComponents(botao);
+
+message.channel.send({
+content: "Clique abaixo",
+components: [row]
+});
+
+}
+
+// ========================================
+// !LOCK
 // ========================================
 
 if (command === "lock") {
 
-if (!isStaff(message.member))
-return;
+if (!isStaff(message.member)) return;
 
 await message.channel.permissionOverwrites.edit(
 message.guild.roles.everyone,
@@ -335,13 +412,12 @@ message.reply("🔒 bloqueado");
 }
 
 // ========================================
-// UNLOCK
+// !UNLOCK
 // ========================================
 
 if (command === "unlock") {
 
-if (!isStaff(message.member))
-return;
+if (!isStaff(message.member)) return;
 
 await message.channel.permissionOverwrites.edit(
 message.guild.roles.everyone,
@@ -355,18 +431,17 @@ message.reply("🔓 desbloqueado");
 }
 
 // ========================================
-// CLEAR
+// !CLEAR
 // ========================================
 
 if (command === "clear") {
 
-if (!isStaff(message.member))
-return;
+if (!isStaff(message.member)) return;
 
 const quantidade = parseInt(args[0]);
 
 if (!quantidade)
-return message.reply("❌ use !xclear 10");
+return message.reply("❌ use !clear 10");
 
 await message.channel.bulkDelete(quantidade, true);
 
@@ -392,16 +467,10 @@ if (interaction.isButton()) {
 // EMBED
 // ========================================
 
-if (interaction.customId === "abrir_embed") {
+if (interaction.customId === "embed_modal") {
 
-if (!isDono(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas DONO",
-ephemeral: true
-});
-
-}
+if (!isDono(interaction.member))
+return;
 
 const modal = new ModalBuilder()
 
@@ -442,52 +511,64 @@ await interaction.showModal(modal);
 
 if (interaction.customId.startsWith("config_")) {
 
-if (!isDono(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas DONO",
-ephemeral: true
-});
-
-}
+if (!isDono(interaction.member))
+return;
 
 const id =
 interaction.customId.replace("config_", "");
 
 const modal = new ModalBuilder()
 
-.setCustomId(`modal_config_${id}`)
+.setCustomId(`modal_vendas_${id}`)
 
 .setTitle("CONFIG VENDAS");
 
 const titulo = new TextInputBuilder()
+
 .setCustomId("titulo")
-.setLabel("Nome Painel")
+
+.setLabel("Nome painel")
+
 .setStyle(TextInputStyle.Short);
 
 const texto = new TextInputBuilder()
+
 .setCustomId("texto")
-.setLabel("Texto Painel")
+
+.setLabel("Texto painel")
+
 .setStyle(TextInputStyle.Paragraph);
 
 const produto = new TextInputBuilder()
+
 .setCustomId("produto")
+
 .setLabel("Produto")
+
 .setStyle(TextInputStyle.Short);
 
 const valor = new TextInputBuilder()
+
 .setCustomId("valor")
+
 .setLabel("Valor")
+
 .setStyle(TextInputStyle.Short);
 
 const pix = new TextInputBuilder()
+
 .setCustomId("pix")
+
 .setLabel("PIX")
+
 .setStyle(TextInputStyle.Short);
 
 const url = new TextInputBuilder()
+
 .setCustomId("url")
+
 .setLabel("URL IMAGEM")
+
 .setStyle(TextInputStyle.Short);
 
 modal.addComponents(
@@ -503,54 +584,51 @@ await interaction.showModal(modal);
 }
 
 // ========================================
-// CONFIG SUP
+// CONFIG SUPORTE
 // ========================================
 
-if (interaction.customId.startsWith("configsup_")) {
+if (interaction.customId.startsWith("config_ticket_")) {
 
-if (!isDono(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas DONO",
-ephemeral: true
-});
-
-}
+if (!isDono(interaction.member))
+return;
 
 const id =
-interaction.customId.replace("configsup_", "");
+interaction.customId.replace("config_ticket_", "");
 
 const modal = new ModalBuilder()
 
-.setCustomId(`modal_sup_${id}`)
+.setCustomId(`modal_ticket_${id}`)
 
 .setTitle("CONFIG SUPORTE");
 
 const titulo = new TextInputBuilder()
+
 .setCustomId("titulo")
+
 .setLabel("Título")
+
 .setStyle(TextInputStyle.Short);
 
 const texto = new TextInputBuilder()
+
 .setCustomId("texto")
+
 .setLabel("Texto")
+
 .setStyle(TextInputStyle.Paragraph);
 
 const cor = new TextInputBuilder()
-.setCustomId("cor")
-.setLabel("Cor HEX")
-.setStyle(TextInputStyle.Short);
 
-const imagem = new TextInputBuilder()
-.setCustomId("imagem")
-.setLabel("Imagem URL")
+.setCustomId("cor")
+
+.setLabel("Cor HEX")
+
 .setStyle(TextInputStyle.Short);
 
 modal.addComponents(
 new ActionRowBuilder().addComponents(titulo),
 new ActionRowBuilder().addComponents(texto),
-new ActionRowBuilder().addComponents(cor),
-new ActionRowBuilder().addComponents(imagem)
+new ActionRowBuilder().addComponents(cor)
 );
 
 await interaction.showModal(modal);
@@ -558,10 +636,10 @@ await interaction.showModal(modal);
 }
 
 // ========================================
-// PAGAMENTO
+// CONFIRMAR PAGAMENTO
 // ========================================
 
-if (interaction.customId === "confirmar") {
+if (interaction.customId === "confirmar_pagamento") {
 
 if (!isStaff(interaction.member)) {
 
@@ -584,33 +662,21 @@ interaction.reply("✅ pagamento confirmado");
 
 if (interaction.customId === "finalizar") {
 
-if (!isStaff(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
+if (!isStaff(interaction.member))
+return;
 
 await interaction.channel.delete();
 
 }
 
 // ========================================
-// ACEITAR
+// ACEITAR TICKET
 // ========================================
 
 if (interaction.customId === "aceitar_ticket") {
 
-if (!isStaff(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
+if (!isStaff(interaction.member))
+return;
 
 await interaction.channel.permissionOverwrites.set([
 
@@ -636,7 +702,7 @@ interaction.reply("✅ ticket assumido");
 }
 
 // ========================================
-// MODAL
+// MODAIS
 // ========================================
 
 if (interaction.isModalSubmit()) {
@@ -669,10 +735,10 @@ embeds: [embed]
 // CONFIG VENDAS
 // ========================================
 
-if (interaction.customId.startsWith("modal_config_")) {
+if (interaction.customId.startsWith("modal_vendas_")) {
 
 const id =
-interaction.customId.replace("modal_config_", "");
+interaction.customId.replace("modal_vendas_", "");
 
 const painel = paineis[id];
 
@@ -682,14 +748,17 @@ interaction.fields.getTextInputValue("titulo");
 painel.texto =
 interaction.fields.getTextInputValue("texto");
 
+painel.pix =
+interaction.fields.getTextInputValue("pix");
+
+painel.url =
+interaction.fields.getTextInputValue("url");
+
 const produto =
 interaction.fields.getTextInputValue("produto");
 
 const valor =
 interaction.fields.getTextInputValue("valor");
-
-painel.pix =
-interaction.fields.getTextInputValue("pix");
 
 painel.produtos.push({
 nome: produto,
@@ -704,7 +773,7 @@ await canal.messages.fetch(
 painel.mensagemId
 );
 
-const novoEmbed = new EmbedBuilder()
+const embed = new EmbedBuilder()
 
 .setTitle(painel.titulo)
 
@@ -717,11 +786,15 @@ ${painel.pix}
 
 .setColor(painel.cor);
 
-const menuNovo = new StringSelectMenuBuilder()
+if (painel.url)
+embed.setImage(painel.url);
+
+const menu =
+new StringSelectMenuBuilder()
 
 .setCustomId(`comprar_${id}`)
 
-.setPlaceholder("Selecione um produto")
+.setPlaceholder("Selecionar produto")
 
 .addOptions(
 
@@ -733,7 +806,7 @@ value: `${i}`
 
 );
 
-const botaoNovo = new ButtonBuilder()
+const config = new ButtonBuilder()
 
 .setCustomId(`config_${id}`)
 
@@ -741,15 +814,18 @@ const botaoNovo = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Secondary);
 
-const rowNovo1 =
-new ActionRowBuilder().addComponents(menuNovo);
-
-const rowNovo2 =
-new ActionRowBuilder().addComponents(botaoNovo);
-
 await mensagem.edit({
-embeds: [novoEmbed],
-components: [rowNovo1, rowNovo2]
+
+embeds: [embed],
+
+components: [
+
+new ActionRowBuilder().addComponents(menu),
+
+new ActionRowBuilder().addComponents(config)
+
+]
+
 });
 
 await interaction.reply({
@@ -760,15 +836,15 @@ ephemeral: true
 }
 
 // ========================================
-// CONFIG SUPORTE
+// CONFIG TICKET
 // ========================================
 
-if (interaction.customId.startsWith("modal_sup_")) {
+if (interaction.customId.startsWith("modal_ticket_")) {
 
 const id =
-interaction.customId.replace("modal_sup_", "");
+interaction.customId.replace("modal_ticket_", "");
 
-const painel = suportePaineis[id];
+const painel = tickets[id];
 
 painel.titulo =
 interaction.fields.getTextInputValue("titulo");
@@ -778,9 +854,6 @@ interaction.fields.getTextInputValue("texto");
 
 painel.cor =
 interaction.fields.getTextInputValue("cor");
-
-painel.imagem =
-interaction.fields.getTextInputValue("imagem");
 
 const canal =
 client.channels.cache.get(painel.canalId);
@@ -798,54 +871,41 @@ const embed = new EmbedBuilder()
 
 .setColor(painel.cor);
 
-if (painel.imagem)
-embed.setImage(painel.imagem);
-
-const menu = new StringSelectMenuBuilder()
+const menu =
+new StringSelectMenuBuilder()
 
 .setCustomId(`ticket_${id}`)
 
-.setPlaceholder("Selecione uma opção")
+.setPlaceholder("Abrir suporte")
 
 .addOptions([
-
 {
-label: "Suporte",
-description: "Ajuda geral",
-value: "geral"
-},
-
-{
-label: "Suporte Android",
-description: "Ajuda Android",
-value: "android"
-},
-
-{
-label: "Suporte iOS",
-description: "Ajuda iOS",
-value: "ios"
+label: "SUPORTE",
+description: "Abrir ticket",
+value: "ticket"
 }
-
 ]);
 
-const engrenagem = new ButtonBuilder()
+const config = new ButtonBuilder()
 
-.setCustomId(`configsup_${id}`)
+.setCustomId(`config_ticket_${id}`)
 
 .setEmoji("⚙️")
 
 .setStyle(ButtonStyle.Secondary);
 
-const row1 =
-new ActionRowBuilder().addComponents(menu);
-
-const row2 =
-new ActionRowBuilder().addComponents(engrenagem);
-
 await mensagem.edit({
+
 embeds: [embed],
-components: [row1, row2]
+
+components: [
+
+new ActionRowBuilder().addComponents(menu),
+
+new ActionRowBuilder().addComponents(config)
+
+]
+
 });
 
 await interaction.reply({
@@ -883,7 +943,8 @@ interaction.customId.replace("comprar_", "");
 
 const painel = paineis[id];
 
-const canal = await interaction.guild.channels.create({
+const canal =
+await interaction.guild.channels.create({
 
 name: `🛒-${interaction.user.username}`,
 
@@ -923,28 +984,41 @@ ${painel.pix}
 
 .setColor(painel.cor);
 
-const pagar = new ButtonBuilder()
-.setCustomId("pagar")
+const pagamento = new ButtonBuilder()
+
+.setCustomId("pagamento")
+
 .setLabel("💳 PAGAMENTO")
+
 .setStyle(ButtonStyle.Success);
 
 const suporte = new ButtonBuilder()
+
 .setCustomId("suporte")
+
 .setLabel("👤 SUPORTE")
+
 .setStyle(ButtonStyle.Primary);
 
 const confirmar = new ButtonBuilder()
-.setCustomId("confirmar")
+
+.setCustomId("confirmar_pagamento")
+
 .setLabel("✅ CONFIRMAR")
+
 .setStyle(ButtonStyle.Secondary);
 
 const finalizar = new ButtonBuilder()
+
 .setCustomId("finalizar")
+
 .setLabel("🗑️ FINALIZAR")
+
 .setStyle(ButtonStyle.Danger);
 
-const row = new ActionRowBuilder().addComponents(
-pagar,
+const row =
+new ActionRowBuilder().addComponents(
+pagamento,
 suporte,
 confirmar,
 finalizar
@@ -969,7 +1043,7 @@ canal.delete().catch(() => {});
 
 }
 
-}, painel.tempo);
+}, 600000);
 
 }
 
@@ -979,7 +1053,8 @@ canal.delete().catch(() => {});
 
 if (interaction.customId.startsWith("ticket_")) {
 
-const canal = await interaction.guild.channels.create({
+const canal =
+await interaction.guild.channels.create({
 
 name: `🎫-${interaction.user.username}`,
 
