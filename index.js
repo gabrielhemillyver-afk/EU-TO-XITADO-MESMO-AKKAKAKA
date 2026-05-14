@@ -13,6 +13,10 @@ TextInputBuilder,
 TextInputStyle
 } = require("discord.js");
 
+// ========================================
+// CLIENT
+// ========================================
+
 const client = new Client({
 intents: [
 GatewayIntentBits.Guilds,
@@ -24,16 +28,24 @@ GatewayIntentBits.MessageContent
 const PREFIX = "!";
 const TOKEN = process.env.TOKEN;
 
+// ========================================
+// DATABASE
+// ========================================
+
 const paineis = {};
 const tickets = {};
 const carrinhos = {};
+
+// ========================================
+// READY
+// ========================================
 
 client.once("ready", () => {
 console.log(`${client.user.tag} ONLINE`);
 });
 
 // ========================================
-// PERMISSÕES
+// FUNÇÕES
 // ========================================
 
 function isDono(member) {
@@ -229,7 +241,7 @@ message.reply("✅ servidor criado");
 if (command === "vendas") {
 
 if (!isDono(message.member))
-return message.reply("❌ apenas DONO");
+return;
 
 const id = Date.now().toString();
 
@@ -239,12 +251,10 @@ mensagemId: "",
 canalId: "",
 
 titulo: "NOVO PAINEL",
-texto: "Configure tudo na engrenagem",
+texto: "Configure na engrenagem",
 cor: "#8000ff",
 url: "",
 pix: "",
-footer: "",
-thumbnail: "",
 
 produtos: []
 
@@ -254,7 +264,7 @@ const embed = new EmbedBuilder()
 
 .setTitle("NOVO PAINEL")
 
-.setDescription("Configure tudo na engrenagem")
+.setDescription("Configure na engrenagem")
 
 .setColor("#8000ff");
 
@@ -267,7 +277,7 @@ const menu = new StringSelectMenuBuilder()
 .addOptions([
 {
 label: "Nenhum produto",
-description: "Configure na engrenagem",
+description: "Adicione produto",
 value: "none"
 }
 ]);
@@ -280,19 +290,33 @@ const config = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Secondary);
 
-const row1 =
-new ActionRowBuilder().addComponents(menu);
+const produto = new ButtonBuilder()
 
-const row2 =
-new ActionRowBuilder().addComponents(config);
+.setCustomId(`produto_${id}`)
 
-const painelMsg =
+.setLabel("➕ Produto")
+
+.setStyle(ButtonStyle.Success);
+
+const painel =
 await message.channel.send({
+
 embeds: [embed],
-components: [row1, row2]
+
+components: [
+
+new ActionRowBuilder().addComponents(menu),
+
+new ActionRowBuilder().addComponents(
+config,
+produto
+)
+
+]
+
 });
 
-paineis[id].mensagemId = painelMsg.id;
+paineis[id].mensagemId = painel.id;
 paineis[id].canalId = message.channel.id;
 
 }
@@ -304,7 +328,7 @@ paineis[id].canalId = message.channel.id;
 if (command === "sup") {
 
 if (!isDono(message.member))
-return message.reply("❌ apenas DONO");
+return;
 
 const id = Date.now().toString();
 
@@ -316,9 +340,7 @@ canalId: "",
 titulo: "🎫 SUPORTE",
 texto: "Abra suporte abaixo",
 cor: "#8000ff",
-url: "",
-footer: "",
-thumbnail: ""
+url: ""
 
 };
 
@@ -352,25 +374,28 @@ const config = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Secondary);
 
-const row1 =
-new ActionRowBuilder().addComponents(menu);
-
-const row2 =
-new ActionRowBuilder().addComponents(config);
-
-const painelMsg =
+const painel =
 await message.channel.send({
+
 embeds: [embed],
-components: [row1, row2]
+
+components: [
+
+new ActionRowBuilder().addComponents(menu),
+
+new ActionRowBuilder().addComponents(config)
+
+]
+
 });
 
-tickets[id].mensagemId = painelMsg.id;
+tickets[id].mensagemId = painel.id;
 tickets[id].canalId = message.channel.id;
 
 }
 
 // ========================================
-// LOCK
+// !LOCK
 // ========================================
 
 if (command === "lock") {
@@ -389,7 +414,7 @@ message.reply("🔒 bloqueado");
 }
 
 // ========================================
-// UNLOCK
+// !UNLOCK
 // ========================================
 
 if (command === "unlock") {
@@ -408,7 +433,7 @@ message.reply("🔓 desbloqueado");
 }
 
 // ========================================
-// CLEAR
+// !CLEAR
 // ========================================
 
 if (command === "clear") {
@@ -510,6 +535,119 @@ await interaction.showModal(modal);
 
 }
 
+// ========================================
+// CONFIG PRODUTO
+// ========================================
+
+if (interaction.customId.startsWith("produto_")) {
+
+if (!isDono(interaction.member))
+return;
+
+const id =
+interaction.customId.replace("produto_", "");
+
+const modal = new ModalBuilder()
+
+.setCustomId(`modal_produto_${id}`)
+
+.setTitle("ADICIONAR PRODUTO");
+
+const produto = new TextInputBuilder()
+
+.setCustomId("produto")
+
+.setLabel("Nome produto")
+
+.setStyle(TextInputStyle.Short);
+
+const valor = new TextInputBuilder()
+
+.setCustomId("valor")
+
+.setLabel("Valor")
+
+.setStyle(TextInputStyle.Short);
+
+const emoji = new TextInputBuilder()
+
+.setCustomId("emoji")
+
+.setLabel("Emoji")
+
+.setStyle(TextInputStyle.Short);
+
+modal.addComponents(
+new ActionRowBuilder().addComponents(produto),
+new ActionRowBuilder().addComponents(valor),
+new ActionRowBuilder().addComponents(emoji)
+);
+
+await interaction.showModal(modal);
+
+}
+
+// ========================================
+// CONFIG TICKET
+// ========================================
+
+if (interaction.customId.startsWith("config_ticket_")) {
+
+if (!isDono(interaction.member))
+return;
+
+const id =
+interaction.customId.replace("config_ticket_", "");
+
+const modal = new ModalBuilder()
+
+.setCustomId(`modal_ticket_${id}`)
+
+.setTitle("CONFIG TICKET");
+
+const titulo = new TextInputBuilder()
+
+.setCustomId("titulo")
+
+.setLabel("Título")
+
+.setStyle(TextInputStyle.Short);
+
+const texto = new TextInputBuilder()
+
+.setCustomId("texto")
+
+.setLabel("Texto")
+
+.setStyle(TextInputStyle.Paragraph);
+
+const url = new TextInputBuilder()
+
+.setCustomId("url")
+
+.setLabel("URL imagem")
+
+.setStyle(TextInputStyle.Short);
+
+const cor = new TextInputBuilder()
+
+.setCustomId("cor")
+
+.setLabel("Cor HEX")
+
+.setStyle(TextInputStyle.Short);
+
+modal.addComponents(
+new ActionRowBuilder().addComponents(titulo),
+new ActionRowBuilder().addComponents(texto),
+new ActionRowBuilder().addComponents(url),
+new ActionRowBuilder().addComponents(cor)
+);
+
+await interaction.showModal(modal);
+
+}
+
 }
 
 // ========================================
@@ -580,7 +718,7 @@ if (painel.produtos.length <= 0) {
 menu.addOptions([
 {
 label: "Nenhum produto",
-description: "Configure na engrenagem",
+description: "Adicione produto",
 value: "none"
 }
 ]);
@@ -592,6 +730,7 @@ menu.addOptions(
 painel.produtos.map((p, i) => ({
 label: p.nome,
 description: `R$ ${p.valor}`,
+emoji: p.emoji,
 value: `${i}`
 }))
 
@@ -607,6 +746,16 @@ const config = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Secondary);
 
+const produtoBtn = new ButtonBuilder()
+
+.setCustomId(`produto_${id}`)
+
+.setLabel("➕ Produto")
+
+.setStyle(ButtonStyle.Success);
+
+// ATUALIZA NA HORA
+
 await mensagem.edit({
 
 embeds: [embed],
@@ -615,7 +764,10 @@ components: [
 
 new ActionRowBuilder().addComponents(menu),
 
-new ActionRowBuilder().addComponents(config)
+new ActionRowBuilder().addComponents(
+config,
+produtoBtn
+)
 
 ]
 
@@ -628,69 +780,47 @@ ephemeral: true
 
 }
 
-}
-
 // ========================================
-// SELECT MENU
+// MODAL PRODUTO
 // ========================================
 
-if (interaction.isStringSelectMenu()) {
-
-// ========================================
-// COMPRAR
-// ========================================
-
-if (interaction.customId.startsWith("comprar_")) {
-
-if (interaction.values[0] === "none") {
-
-return interaction.reply({
-content: "❌ nenhum produto",
-ephemeral: true
-});
-
-}
+if (interaction.customId.startsWith("modal_produto_")) {
 
 const id =
-interaction.customId.replace("comprar_", "");
+interaction.customId.replace("modal_produto_", "");
 
 const painel = paineis[id];
 
-const canal =
-await interaction.guild.channels.create({
+const produto =
+interaction.fields.getTextInputValue("produto");
 
-name: `🛒-${interaction.user.username}`,
+const valor =
+interaction.fields.getTextInputValue("valor");
 
-type: ChannelType.GuildText,
+const emoji =
+interaction.fields.getTextInputValue("emoji");
 
-permissionOverwrites: [
-
-{
-id: interaction.guild.roles.everyone,
-deny: [PermissionsBitField.Flags.ViewChannel]
-},
-
-{
-id: interaction.user.id,
-allow: [
-PermissionsBitField.Flags.ViewChannel,
-PermissionsBitField.Flags.SendMessages
-]
-}
-
-]
-
+painel.produtos.push({
+nome: produto,
+valor: valor,
+emoji: emoji
 });
 
-carrinhos[canal.id] = {
-confirmado: false
-};
+const canal =
+client.channels.cache.get(painel.canalId);
+
+const mensagem =
+await canal.messages.fetch(
+painel.mensagemId
+);
 
 const embed = new EmbedBuilder()
 
-.setTitle("🛒 CARRINHO")
+.setTitle(painel.titulo)
 
 .setDescription(`
+${painel.texto}
+
 💳 PIX:
 ${painel.pix}
 `)
@@ -700,66 +830,61 @@ ${painel.pix}
 if (painel.url)
 embed.setImage(painel.url);
 
-const pagamento = new ButtonBuilder()
+const menu =
+new StringSelectMenuBuilder()
 
-.setCustomId("pagamento")
+.setCustomId(`comprar_${id}`)
 
-.setLabel("💳 PAGAMENTO")
+.setPlaceholder("Selecionar produto")
 
-.setStyle(ButtonStyle.Success);
+.addOptions(
 
-const suporte = new ButtonBuilder()
+painel.produtos.map((p, i) => ({
+label: p.nome,
+description: `R$ ${p.valor}`,
+emoji: p.emoji,
+value: `${i}`
+}))
 
-.setCustomId("suporte")
+);
 
-.setLabel("👤 SUPORTE")
+const config = new ButtonBuilder()
 
-.setStyle(ButtonStyle.Primary);
+.setCustomId(`config_${id}`)
 
-const confirmar = new ButtonBuilder()
-
-.setCustomId("confirmar_pagamento")
-
-.setLabel("✅ CONFIRMAR")
+.setEmoji("⚙️")
 
 .setStyle(ButtonStyle.Secondary);
 
-const finalizar = new ButtonBuilder()
+const produtoBtn = new ButtonBuilder()
 
-.setCustomId("finalizar")
+.setCustomId(`produto_${id}`)
 
-.setLabel("🗑️ FINALIZAR")
+.setLabel("➕ Produto")
 
-.setStyle(ButtonStyle.Danger);
+.setStyle(ButtonStyle.Success);
 
-const row =
-new ActionRowBuilder().addComponents(
-pagamento,
-suporte,
-confirmar,
-finalizar
-);
+await mensagem.edit({
 
-await canal.send({
-content: `${interaction.user}`,
 embeds: [embed],
-components: [row]
+
+components: [
+
+new ActionRowBuilder().addComponents(menu),
+
+new ActionRowBuilder().addComponents(
+config,
+produtoBtn
+)
+
+]
+
 });
 
-interaction.reply({
-content: `✅ carrinho criado ${canal}`,
+await interaction.reply({
+content: "✅ produto adicionado",
 ephemeral: true
 });
-
-setTimeout(async () => {
-
-if (!carrinhos[canal.id]?.confirmado) {
-
-canal.delete().catch(() => {});
-
-}
-
-}, 600000);
 
 }
 
