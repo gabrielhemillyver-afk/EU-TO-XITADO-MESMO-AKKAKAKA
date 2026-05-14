@@ -1,3 +1,7 @@
+// ========================================
+// GHOSTZADA BOT FULL FIX
+// ========================================
+
 const {
 Client,
 GatewayIntentBits,
@@ -118,119 +122,7 @@ color: cargo[1]
 
 }
 
-const estrutura = [
-
-{
-categoria: "📌 RECEPÇÃO",
-canais: [
-"📢・avisos",
-"👤・crie-seu-painel",
-"🔗・url",
-"🎁・verificação",
-"🎁・rewards",
-"⚙️・atualizações",
-"📨・rede-sociais"
-]
-},
-
-{
-categoria: "❓ FAQ ( LOJA )",
-canais: [
-"⛓️・como-comprar",
-"🌐・site-oficial"
-]
-},
-
-{
-categoria: "📌 IMPORTANTE",
-canais: [
-"📜・termos",
-"📊・avaliação",
-"📊・avaliação-entregues",
-"✅・compras-entregues"
-]
-},
-
-{
-categoria: "🎫 TICKET SUPORTE",
-canais: [
-"👥・ticket",
-"🌟・avaliação-ticket"
-]
-},
-
-{
-categoria: "🍎 CERTIFICADO IOS",
-canais: [
-"☕・certificado・gbox",
-"☕・certificado・esign",
-"☕・certificado・scarlet",
-"☕・certificado・maplesigner"
-]
-},
-
-{
-categoria: "🤖 ANDROID NOVA ATUALIZAÇÃO",
-canais: [
-"🏅・m0d・4pk・andr0id",
-"🏅・ffh4xhg・android",
-"🏅・mod・safe・dripclient",
-"🏅・passador・de・replay・android",
-"🏅・ffh4xlite・android",
-"🏅・ffh4xbypass・android",
-"🏅・proxy・android・external",
-"🏅・pack・e・otimização・full",
-"🏅・combo・apostado・android",
-"🛠️・auxílio・android",
-"🌌・holograma・android",
-"🎛️・painel・legit",
-"🎯・gerador・de・sensi・android"
-]
-},
-
-{
-categoria: "🍎 IPHONE NOVA ATUALIZAÇÃO",
-canais: [
-"🏅・ffh4x・ios・rage",
-"🏅・ffh4x・ios・legit",
-"🏅・ios・safe・menu",
-"🏅・byp4ss・full・iphone",
-"🏅・painel・iphone・safe",
-"🏅・painel・ios・premium",
-"🏅・hspescoco・todos・ios",
-"🏅・ios・drip・premium",
-"🏅・combo・apostador・ios",
-"🏅・proxy・ios・external",
-"🏅・pack・ios・fps",
-"🛠️・auxílio-ios",
-"🌌・holograma・ios",
-"🎯・gerador・de・sensi・ios"
-]
-}
-
-];
-
-for (const item of estrutura) {
-
-const categoria =
-await message.guild.channels.create({
-name: item.categoria,
-type: ChannelType.GuildCategory
-});
-
-for (const canal of item.canais) {
-
-await message.guild.channels.create({
-name: canal,
-type: ChannelType.GuildText,
-parent: categoria.id
-});
-
-}
-
-}
-
-message.reply("✅ servidor criado");
+message.reply("✅ cargos criados");
 
 }
 
@@ -394,63 +286,6 @@ tickets[id].canalId = message.channel.id;
 
 }
 
-// ========================================
-// !LOCK
-// ========================================
-
-if (command === "lock") {
-
-if (!isStaff(message.member)) return;
-
-await message.channel.permissionOverwrites.edit(
-message.guild.roles.everyone,
-{
-SendMessages: false
-}
-);
-
-message.reply("🔒 bloqueado");
-
-}
-
-// ========================================
-// !UNLOCK
-// ========================================
-
-if (command === "unlock") {
-
-if (!isStaff(message.member)) return;
-
-await message.channel.permissionOverwrites.edit(
-message.guild.roles.everyone,
-{
-SendMessages: true
-}
-);
-
-message.reply("🔓 desbloqueado");
-
-}
-
-// ========================================
-// !CLEAR
-// ========================================
-
-if (command === "clear") {
-
-if (!isStaff(message.member)) return;
-
-const quantidade = parseInt(args[0]);
-
-if (!quantidade)
-return message.reply("❌ use !clear 10");
-
-await message.channel.bulkDelete(quantidade, true);
-
-message.channel.send(`🗑️ ${quantidade} apagadas`);
-
-}
-
 });
 
 // ========================================
@@ -536,7 +371,7 @@ await interaction.showModal(modal);
 }
 
 // ========================================
-// CONFIG PRODUTO
+// PRODUTO
 // ========================================
 
 if (interaction.customId.startsWith("produto_")) {
@@ -581,67 +416,6 @@ modal.addComponents(
 new ActionRowBuilder().addComponents(produto),
 new ActionRowBuilder().addComponents(valor),
 new ActionRowBuilder().addComponents(emoji)
-);
-
-await interaction.showModal(modal);
-
-}
-
-// ========================================
-// CONFIG TICKET
-// ========================================
-
-if (interaction.customId.startsWith("config_ticket_")) {
-
-if (!isDono(interaction.member))
-return;
-
-const id =
-interaction.customId.replace("config_ticket_", "");
-
-const modal = new ModalBuilder()
-
-.setCustomId(`modal_ticket_${id}`)
-
-.setTitle("CONFIG TICKET");
-
-const titulo = new TextInputBuilder()
-
-.setCustomId("titulo")
-
-.setLabel("Título")
-
-.setStyle(TextInputStyle.Short);
-
-const texto = new TextInputBuilder()
-
-.setCustomId("texto")
-
-.setLabel("Texto")
-
-.setStyle(TextInputStyle.Paragraph);
-
-const url = new TextInputBuilder()
-
-.setCustomId("url")
-
-.setLabel("URL imagem")
-
-.setStyle(TextInputStyle.Short);
-
-const cor = new TextInputBuilder()
-
-.setCustomId("cor")
-
-.setLabel("Cor HEX")
-
-.setStyle(TextInputStyle.Short);
-
-modal.addComponents(
-new ActionRowBuilder().addComponents(titulo),
-new ActionRowBuilder().addComponents(texto),
-new ActionRowBuilder().addComponents(url),
-new ActionRowBuilder().addComponents(cor)
 );
 
 await interaction.showModal(modal);
@@ -754,8 +528,6 @@ const produtoBtn = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Success);
 
-// ATUALIZA NA HORA
-
 await mensagem.edit({
 
 embeds: [embed],
@@ -773,10 +545,16 @@ produtoBtn
 
 });
 
+// FIX INTERACTION
+
+if (!interaction.replied && !interaction.deferred) {
+
 await interaction.reply({
 content: "✅ painel atualizado",
 ephemeral: true
 });
+
+}
 
 }
 
@@ -881,10 +659,16 @@ produtoBtn
 
 });
 
+// FIX INTERACTION
+
+if (!interaction.replied && !interaction.deferred) {
+
 await interaction.reply({
 content: "✅ produto adicionado",
 ephemeral: true
 });
+
+}
 
 }
 
