@@ -8,7 +8,7 @@ ActionRowBuilder,
 ButtonBuilder,
 ButtonStyle,
 StringSelectMenuBuilder
-} = require('discord.js');
+} = require("discord.js");
 
 const client = new Client({
 intents: [
@@ -22,47 +22,26 @@ const prefix = "+";
 
 const produtos = {
 android: {
-nome: "FFH4X ANDROID",
+nome: "🏅・FFH4X ANDROID",
 valor: "12,72"
 },
 ios: {
-nome: "FFH4X IOS",
+nome: "🏅・FFH4X IOS",
 valor: "15,00"
+},
+bypass: {
+nome: "🏅・BYPASS IOS",
+valor: "20,00"
 }
 };
 
-client.once("ready", async () => {
-
+client.once("ready", () => {
 console.log(`${client.user.tag} ONLINE`);
-
-client.guilds.cache.forEach(async guild => {
-
-const cargos = [
-{ nome: "DONO", cor: "#000000" },
-{ nome: "SUB DONO", cor: "#000000" },
-{ nome: "SUPORTE", cor: "#00008B" },
-{ nome: "MOD APK", cor: "#87CEFA" },
-{ nome: "IPHONE", cor: "#00FFFF" },
-{ nome: "DISCORD.GG", cor: "#FFFF00" }
-];
-
-for (const cargo of cargos) {
-if (!guild.roles.cache.find(r => r.name === cargo.nome)) {
-await guild.roles.create({
-name: cargo.nome,
-color: cargo.cor
-});
-}
-}
-
-});
-
 });
 
 client.on("messageCreate", async message => {
 
 if (message.author.bot) return;
-
 if (!message.content.startsWith(prefix)) return;
 
 const args = message.content.slice(prefix.length).trim().split(/ +/);
@@ -70,71 +49,187 @@ const cmd = args.shift().toLowerCase();
 
 if (cmd === "setup") {
 
-const categorias = [
-"RECEPÇÃO",
-"FAQ ( LOJA )",
-"IMPORTANTE",
-"TICKET SUPORTE",
-"CERTIFICADO IOS",
-"ANDROID NOVA ATUALIZAÇÃO",
-"IPHONE NOVA ATUALIZAÇÃO",
-"BYPASS TODOS IOS"
+const cargos = [
+["DONO", "#000000"],
+["SUB DONO", "#000000"],
+["SUPORTE", "#00008B"],
+["MOD APK", "#87CEFA"],
+["IPHONE", "#00FFFF"],
+["DISCORD.GG", "#FFFF00"]
 ];
 
-for (const nome of categorias) {
+for (const cargo of cargos) {
+
+if (!message.guild.roles.cache.find(r => r.name === cargo[0])) {
+
+await message.guild.roles.create({
+name: cargo[0],
+color: cargo[1]
+});
+
+}
+
+}
+
+const estrutura = [
+
+{
+categoria: "📌 RECEPÇÃO",
+canais: [
+"📢・avisos",
+"👤・crie-seu-painel",
+"🔗・url",
+"🎁・verificação",
+"🎁・rewards",
+"⚙️・atualizações",
+"📨・rede-sociais"
+]
+},
+
+{
+categoria: "❓ FAQ ( LOJA )",
+canais: [
+"⛓️・como-comprar",
+"🌐・site-oficial"
+]
+},
+
+{
+categoria: "📌 IMPORTANTE",
+canais: [
+"📜・termos",
+"📊・avaliação",
+"📊・avaliação-entregues",
+"✅・compras-entregues"
+]
+},
+
+{
+categoria: "🎫 TICKET SUPORTE",
+canais: [
+"👥・ticket",
+"🌟・avaliação-ticket"
+]
+},
+
+{
+categoria: "🍎 CERTIFICADO IOS",
+canais: [
+"☕・certificado・gbox"
+]
+},
+
+{
+categoria: "🤖 ANDROID NOVA ATUALIZAÇÃO",
+canais: [
+"🏅・m0d・4pk・andr0id",
+"🏅・ffh4xhg・android",
+"🏅・mod・safe・dripclient",
+"🏅・passador・de・replay・android",
+"🏅・ffh4xlite・android",
+"🏅・ffh4xbypass・android",
+"🏅・proxy・android・external",
+"🏅・pack・e・otimização・full",
+"🏅・combo・apostado・android",
+"🛠️・auxílio・android",
+"🌌・holograma・android",
+"🎛️・painel・legit",
+"🎯・gerador・de・sensi・android"
+]
+},
+
+{
+categoria: "📱 IPHONE NOVA ATUALIZAÇÃO",
+canais: [
+"🏅・ffh4x・ios・rage",
+"🏅・byp4ss・full・iphone",
+"🏅・painel・iphone・safe",
+"🏅・hspescoco・todos・ios",
+"🛠️・auxílio-ios"
+]
+},
+
+{
+categoria: "🛡️ BYPASS TODOS IOS",
+canais: [
+"🏅・bypass・todos・ios"
+]
+},
+
+{
+categoria: "📶 BYPASS IOS VIA WIFI",
+canais: [
+"🛜・xit・via・wifi"
+]
+}
+
+];
+
+for (const item of estrutura) {
 
 const categoria = await message.guild.channels.create({
-name: nome,
+name: item.categoria,
 type: ChannelType.GuildCategory
 });
 
+for (const canal of item.canais) {
+
 await message.guild.channels.create({
-name: "avisos",
+name: canal,
 type: ChannelType.GuildText,
 parent: categoria.id
 });
 
 }
 
-message.reply("Servidor configurado.");
+}
+
+message.reply("✅ servidor criado");
 
 }
 
 if (cmd === "vendas") {
 
 const embed = new EmbedBuilder()
-.setTitle("FFH4X RAGE ANDROID 🔥")
+.setTitle("🔥 PAINEL DE VENDAS")
 .setDescription(`
-Seu painel de vendas.
-
 Selecione um produto abaixo.
+
+✅ Android
+✅ iPhone
+✅ Bypass
 `)
 .setColor("#8000ff")
-.setImage("https://i.imgur.com/yourimage.png");
+.setImage("https://i.imgur.com/u7D6wzB.png");
 
 const menu = new StringSelectMenuBuilder()
 .setCustomId("produto")
-.setPlaceholder("Selecione um Produto")
+.setPlaceholder("Selecione um produto")
 .addOptions([
 {
 label: "FFH4X ANDROID",
-description: "Produto Android",
+description: "Android",
 value: "android"
 },
 {
 label: "FFH4X IOS",
-description: "Produto IOS",
+description: "iPhone",
 value: "ios"
+},
+{
+label: "BYPASS IOS",
+description: "Bypass",
+value: "bypass"
 }
 ]);
 
-const config = new ButtonBuilder()
+const engrenagem = new ButtonBuilder()
 .setCustomId("config")
 .setEmoji("⚙️")
 .setStyle(ButtonStyle.Secondary);
 
 const row1 = new ActionRowBuilder().addComponents(menu);
-const row2 = new ActionRowBuilder().addComponents(config);
+const row2 = new ActionRowBuilder().addComponents(engrenagem);
 
 message.channel.send({
 embeds: [embed],
@@ -146,31 +241,30 @@ components: [row1, row2]
 if (cmd === "sup") {
 
 const embed = new EmbedBuilder()
-.setTitle("Ghostzada")
+.setTitle("🎫 SUPORTE")
 .setDescription(`
-Precisa de ajuda?
-
 Abra um ticket abaixo.
 `)
-.setColor("#8000ff");
+.setColor("#8000ff")
+.setImage("https://i.imgur.com/u7D6wzB.png");
 
 const menu = new StringSelectMenuBuilder()
 .setCustomId("ticket")
-.setPlaceholder("Selecione uma opção...")
+.setPlaceholder("Selecione uma opção")
 .addOptions([
 {
-label: "Suporte",
-description: "Dúvidas gerais",
+label: "SUPORTE",
+description: "Suporte geral",
 value: "geral"
 },
 {
-label: "Suporte Android",
-description: "Ajuda Android",
+label: "SUPORTE ANDROID",
+description: "Android",
 value: "android"
 },
 {
-label: "Suporte iOS",
-description: "Ajuda iOS",
+label: "SUPORTE IOS",
+description: "iPhone",
 value: "ios"
 }
 ]);
@@ -193,7 +287,7 @@ SendMessages: false
 }
 );
 
-message.reply("Canal bloqueado.");
+message.reply("🔒 canal bloqueado");
 
 }
 
@@ -206,7 +300,7 @@ SendMessages: true
 }
 );
 
-message.reply("Canal desbloqueado.");
+message.reply("🔓 canal desbloqueado");
 
 }
 
@@ -218,7 +312,7 @@ if (!quantidade) return;
 
 await message.channel.bulkDelete(quantidade, true);
 
-message.channel.send(`Apaguei ${quantidade} mensagens.`);
+message.channel.send(`🗑️ apaguei ${quantidade} mensagens`);
 
 }
 
@@ -233,13 +327,15 @@ if (interaction.customId === "produto") {
 const produto = produtos[interaction.values[0]];
 
 const canal = await interaction.guild.channels.create({
-name: `carrinho-${interaction.user.username}`,
+name: `🛒-${interaction.user.username}`,
 type: ChannelType.GuildText,
 permissionOverwrites: [
+
 {
 id: interaction.guild.roles.everyone,
 deny: [PermissionsBitField.Flags.ViewChannel]
 },
+
 {
 id: interaction.user.id,
 allow: [
@@ -247,21 +343,23 @@ PermissionsBitField.Flags.ViewChannel,
 PermissionsBitField.Flags.SendMessages
 ]
 }
+
 ]
 });
 
 const embed = new EmbedBuilder()
-.setTitle("Detalhes da sua compra")
+.setTitle("🛒 CARRINHO")
 .setDescription(`
-Produto: ${produto.nome}
+Produto:
+${produto.nome}
 
-Valor:
+💸 Valor:
 R$ ${produto.valor}
 `)
 .setColor("#8000ff");
 
-const pagamento = new ButtonBuilder()
-.setCustomId("pagamento")
+const pagar = new ButtonBuilder()
+.setCustomId("pagar")
 .setLabel("Ir para pagamento")
 .setStyle(ButtonStyle.Success);
 
@@ -281,65 +379,93 @@ const finalizar = new ButtonBuilder()
 .setStyle(ButtonStyle.Danger);
 
 const row = new ActionRowBuilder().addComponents(
-pagamento,
+pagar,
 suporte,
 confirmar,
 finalizar
 );
 
-canal.send({
+await canal.send({
 content: `${interaction.user}`,
 embeds: [embed],
 components: [row]
 });
 
 interaction.reply({
-content: `Seu carrinho foi criado: ${canal}`,
+content: `✅ carrinho criado ${canal}`,
 ephemeral: true
 });
 
 setTimeout(() => {
-
-if (canal) {
 canal.delete().catch(() => {});
-}
-
 }, 600000);
 
 }
 
 if (interaction.customId === "ticket") {
 
+const suporteRole = interaction.guild.roles.cache.find(
+r => r.name === "SUPORTE"
+);
+
+const donoRole = interaction.guild.roles.cache.find(
+r => r.name === "DONO"
+);
+
+const subRole = interaction.guild.roles.cache.find(
+r => r.name === "SUB DONO"
+);
+
 const canal = await interaction.guild.channels.create({
-name: `ticket-${interaction.user.username}`,
+name: `🎫-${interaction.user.username}`,
 type: ChannelType.GuildText,
+
 permissionOverwrites: [
+
 {
 id: interaction.guild.roles.everyone,
 deny: [PermissionsBitField.Flags.ViewChannel]
 },
+
 {
 id: interaction.user.id,
 allow: [
 PermissionsBitField.Flags.ViewChannel,
 PermissionsBitField.Flags.SendMessages
 ]
+},
+
+{
+id: suporteRole.id,
+allow: [PermissionsBitField.Flags.ViewChannel]
+},
+
+{
+id: donoRole.id,
+allow: [PermissionsBitField.Flags.ViewChannel]
+},
+
+{
+id: subRole.id,
+allow: [PermissionsBitField.Flags.ViewChannel]
 }
+
 ]
+
 });
 
 const aceitar = new ButtonBuilder()
-.setCustomId("aceitar_ticket")
+.setCustomId("aceitar")
 .setLabel("Aceitar")
 .setStyle(ButtonStyle.Success);
 
 const sair = new ButtonBuilder()
-.setCustomId("sair_ticket")
+.setCustomId("sair")
 .setLabel("Sair")
 .setStyle(ButtonStyle.Secondary);
 
 const fechar = new ButtonBuilder()
-.setCustomId("fechar_ticket")
+.setCustomId("fechar")
 .setLabel("Fechar")
 .setStyle(ButtonStyle.Danger);
 
@@ -349,13 +475,13 @@ sair,
 fechar
 );
 
-canal.send({
+await canal.send({
 content: `${interaction.user}`,
 components: [row]
 });
 
 interaction.reply({
-content: `Ticket criado: ${canal}`,
+content: `✅ ticket criado ${canal}`,
 ephemeral: true
 });
 
@@ -365,28 +491,40 @@ ephemeral: true
 
 if (interaction.isButton()) {
 
-if (interaction.customId === "pagamento") {
+if (interaction.customId === "pagar") {
 
 const embed = new EmbedBuilder()
-.setTitle("Pagamento")
+.setTitle("💳 PAGAMENTO")
 .setDescription(`
-Escolha sua forma de pagamento.
+Escolha uma forma de pagamento.
 `)
 .setColor("#8000ff");
 
 const pix = new ButtonBuilder()
 .setCustomId("pix")
-.setLabel("Pagar com Pix")
+.setLabel("PIX")
 .setStyle(ButtonStyle.Success);
 
 const cartao = new ButtonBuilder()
 .setCustomId("cartao")
-.setLabel("Pagar com Cartão")
+.setLabel("CARTÃO")
+.setStyle(ButtonStyle.Primary);
+
+const saldo = new ButtonBuilder()
+.setCustomId("saldo")
+.setLabel("SALDO")
 .setStyle(ButtonStyle.Secondary);
+
+const voltar = new ButtonBuilder()
+.setCustomId("voltar")
+.setLabel("VOLTAR")
+.setStyle(ButtonStyle.Danger);
 
 const row = new ActionRowBuilder().addComponents(
 pix,
-cartao
+cartao,
+saldo,
+voltar
 );
 
 interaction.reply({
@@ -398,35 +536,39 @@ components: [row]
 
 if (interaction.customId === "confirmar") {
 
-const suporte = interaction.guild.roles.cache.find(
+const suporteRole = interaction.guild.roles.cache.find(
 r => r.name === "SUPORTE"
 );
 
-if (!interaction.member.roles.cache.has(suporte.id)) {
+if (!interaction.member.roles.cache.has(suporteRole.id)) {
+
 return interaction.reply({
-content: "Apenas suporte.",
+content: "❌ apenas suporte",
 ephemeral: true
 });
+
 }
 
-interaction.reply("Pagamento confirmado.");
+interaction.reply("✅ pagamento confirmado");
 
 }
 
 if (interaction.customId === "finalizar") {
 
-const suporte = interaction.guild.roles.cache.find(
+const suporteRole = interaction.guild.roles.cache.find(
 r => r.name === "SUPORTE"
 );
 
-if (!interaction.member.roles.cache.has(suporte.id)) {
+if (!interaction.member.roles.cache.has(suporteRole.id)) {
+
 return interaction.reply({
-content: "Apenas suporte.",
+content: "❌ apenas suporte",
 ephemeral: true
 });
+
 }
 
-interaction.reply("Carrinho finalizado.");
+interaction.reply("🗑️ finalizando");
 
 setTimeout(() => {
 interaction.channel.delete().catch(() => {});
@@ -434,44 +576,63 @@ interaction.channel.delete().catch(() => {});
 
 }
 
-if (interaction.customId === "aceitar_ticket") {
+if (interaction.customId === "aceitar") {
 
-const suporte = interaction.guild.roles.cache.find(
+const suporteRole = interaction.guild.roles.cache.find(
 r => r.name === "SUPORTE"
 );
 
-if (!interaction.member.roles.cache.has(suporte.id)) {
+if (!interaction.member.roles.cache.has(suporteRole.id)) {
+
 return interaction.reply({
-content: "Apenas suporte.",
+content: "❌ apenas suporte",
 ephemeral: true
 });
+
 }
 
-await interaction.channel.permissionOverwrites.edit(
-interaction.member.id,
+await interaction.channel.permissionOverwrites.set([
+
 {
-ViewChannel: true,
-SendMessages: true
+id: interaction.guild.roles.everyone,
+deny: [PermissionsBitField.Flags.ViewChannel]
+},
+
+{
+id: interaction.user.id,
+allow: [
+PermissionsBitField.Flags.ViewChannel,
+PermissionsBitField.Flags.SendMessages
+]
+},
+
+{
+id: interaction.member.id,
+allow: [
+PermissionsBitField.Flags.ViewChannel,
+PermissionsBitField.Flags.SendMessages
+]
 }
-);
 
-interaction.reply("Ticket aceito.");
+]);
+
+interaction.reply("✅ ticket aceito");
 
 }
 
-if (interaction.customId === "sair_ticket") {
+if (interaction.customId === "sair") {
 
 await interaction.channel.permissionOverwrites.delete(
 interaction.member.id
 );
 
-interaction.reply("Você saiu do ticket.");
+interaction.reply("🚪 você saiu");
 
 }
 
-if (interaction.customId === "fechar_ticket") {
+if (interaction.customId === "fechar") {
 
-interaction.reply("Fechando ticket.");
+interaction.reply("🗑️ fechando ticket");
 
 setTimeout(() => {
 interaction.channel.delete().catch(() => {});
