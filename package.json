@@ -1,7 +1,6 @@
 {
   "name": "ghostzada-bot",
   "version": "1.0.0",
-  "description": "Bot completo de vendas e suporte",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
