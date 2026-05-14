@@ -7,7 +7,10 @@ EmbedBuilder,
 ActionRowBuilder,
 ButtonBuilder,
 ButtonStyle,
-StringSelectMenuBuilder
+StringSelectMenuBuilder,
+ModalBuilder,
+TextInputBuilder,
+TextInputStyle
 } = require("discord.js");
 
 const TOKEN = process.env.TOKEN;
@@ -22,8 +25,8 @@ GatewayIntentBits.MessageContent
 });
 
 const paineis = {};
-const tickets = {};
-const configs = {};
+const carrinhos = {};
+const suportePaineis = {};
 
 // ======================================================
 // READY
@@ -36,6 +39,14 @@ console.log(`${client.user.tag} ONLINE`);
 // ======================================================
 // FUNÇÕES
 // ======================================================
+
+function isDono(member) {
+
+return member.roles.cache.some(r =>
+r.name === "DONO"
+);
+
+}
 
 function isStaff(member) {
 
@@ -66,6 +77,9 @@ const command = args.shift().toLowerCase();
 // ======================================================
 
 if (command === "setup") {
+
+if (!isDono(message.member))
+return message.reply("❌ apenas DONO");
 
 const cargos = [
 
@@ -202,12 +216,7 @@ parent: categoria.id
 
 }
 
-await message.guild.channels.create({
-name: "📜・logs",
-type: ChannelType.GuildText
-});
-
-message.reply("✅ servidor criado");
+await message.reply("✅ servidor criado");
 
 }
 
@@ -217,20 +226,44 @@ message.reply("✅ servidor criado");
 
 if (command === "m") {
 
-const cor = args.pop();
+if (!isDono(message.member))
+return message.reply("❌ apenas DONO");
 
-const texto = args.join(" ");
+const modal = new ModalBuilder()
+.setCustomId("modal_m")
+.setTitle("CRIAR EMBED");
 
-if (!texto || !cor)
-return message.reply("❌ use !m mensagem cor");
+const texto = new TextInputBuilder()
+.setCustomId("texto")
+.setLabel("Mensagem")
+.setStyle(TextInputStyle.Paragraph)
+.setRequired(true);
 
-const embed = new EmbedBuilder()
-.setDescription(texto)
-.setColor(cor);
+const cor = new TextInputBuilder()
+.setCustomId("cor")
+.setLabel("Cor HEX")
+.setPlaceholder("#8000ff")
+.setStyle(TextInputStyle.Short)
+.setRequired(true);
 
-message.channel.send({
-embeds: [embed]
+modal.addComponents(
+new ActionRowBuilder().addComponents(texto),
+new ActionRowBuilder().addComponents(cor)
+);
+
+await message.channel.send({
+content: "Clique abaixo",
+components: [
+new ActionRowBuilder().addComponents(
+new ButtonBuilder()
+.setCustomId("abrir_m")
+.setLabel("📨 Criar")
+.setStyle(ButtonStyle.Primary)
+)
+]
 });
+
+message.modalData = modal;
 
 }
 
@@ -240,74 +273,50 @@ embeds: [embed]
 
 if (command === "vendas") {
 
+if (!isDono(message.member))
+return message.reply("❌ apenas DONO");
+
 const id = Date.now().toString();
 
-configs[id] = {
+paineis[id] = {
 
-painel: "Ghostzada Store",
+titulo: "NOVO PAINEL",
 
-texto: "✅ Compra automática\n✅ Entrega rápida",
+texto: "Configure na engrenagem",
 
-imagem: "https://i.imgur.com/u7D6wzB.png",
+imagem: "",
 
 thumbnail: "",
 
-footer: "Ghostzada",
+footer: "",
 
 cor: "#8000ff",
 
-produto: "FFH4X ANDROID",
+pix: "",
 
-emoji: "🏅",
+textoPix: "",
 
-valor: "12,72",
+tempo: 600000,
 
-pix: "SUA_CHAVE_PIX",
-
-textoPix: "⚠️ envie comprovante",
-
-tempo: 600000
+produtos: []
 
 };
 
-const c = configs[id];
+const painel = paineis[id];
 
 const embed = new EmbedBuilder()
 
-.setTitle(c.painel)
+.setTitle(painel.titulo)
 
-.setDescription(`
-${c.texto}
+.setDescription(painel.texto)
 
-${c.emoji} ${c.produto}
-💸 R$ ${c.valor}
-`)
-
-.setColor(c.cor)
-
-.setImage(c.imagem)
-
-.setFooter({
-text: c.footer
-});
-
-if (c.thumbnail)
-embed.setThumbnail(c.thumbnail);
+.setColor(painel.cor);
 
 const menu = new StringSelectMenuBuilder()
 
 .setCustomId(`comprar_${id}`)
 
-.setPlaceholder("Selecione um produto")
-
-.addOptions([
-{
-label: c.produto,
-description: `R$ ${c.valor}`,
-emoji: c.emoji,
-value: "comprar"
-}
-]);
+.setPlaceholder("Nenhum produto");
 
 const engrenagem = new ButtonBuilder()
 
@@ -333,13 +342,32 @@ components: [row1, row2]
 
 if (command === "sup") {
 
+if (!isDono(message.member))
+return message.reply("❌ apenas DONO");
+
 const id = Date.now().toString();
+
+suportePaineis[id] = {
+
+titulo: "🎫 SUPORTE",
+
+texto: "Abra suporte abaixo",
+
+cor: "#8000ff",
+
+imagem: "",
+
+thumbnail: "",
+
+footer: ""
+
+};
 
 const embed = new EmbedBuilder()
 
 .setTitle("🎫 SUPORTE")
 
-.setDescription("Selecione abaixo")
+.setDescription("Abra suporte abaixo")
 
 .setColor("#8000ff");
 
@@ -350,25 +378,11 @@ const menu = new StringSelectMenuBuilder()
 .setPlaceholder("Abrir suporte")
 
 .addOptions([
-
 {
 label: "SUPORTE",
 description: "Ajuda geral",
 value: "1"
-},
-
-{
-label: "SUPORTE IOS",
-description: "Ajuda IOS",
-value: "2"
-},
-
-{
-label: "SUPORTE ANDROID",
-description: "Ajuda Android",
-value: "3"
 }
-
 ]);
 
 const engrenagem = new ButtonBuilder()
@@ -395,6 +409,9 @@ components: [row1, row2]
 
 if (command === "lock") {
 
+if (!isStaff(message.member))
+return message.reply("❌ apenas staff");
+
 await message.channel.permissionOverwrites.edit(
 message.guild.roles.everyone,
 {
@@ -402,7 +419,7 @@ SendMessages: false
 }
 );
 
-message.reply("🔒 canal bloqueado");
+message.reply("🔒 bloqueado");
 
 }
 
@@ -412,6 +429,9 @@ message.reply("🔒 canal bloqueado");
 
 if (command === "unlock") {
 
+if (!isStaff(message.member))
+return message.reply("❌ apenas staff");
+
 await message.channel.permissionOverwrites.edit(
 message.guild.roles.everyone,
 {
@@ -419,7 +439,7 @@ SendMessages: true
 }
 );
 
-message.reply("🔓 canal desbloqueado");
+message.reply("🔓 desbloqueado");
 
 }
 
@@ -428,6 +448,9 @@ message.reply("🔓 canal desbloqueado");
 // ======================================================
 
 if (command === "clear") {
+
+if (!isStaff(message.member))
+return message.reply("❌ apenas staff");
 
 const quantidade = parseInt(args[0]);
 
@@ -449,7 +472,180 @@ message.channel.send(`🗑️ ${quantidade} apagadas`);
 client.on("interactionCreate", async interaction => {
 
 // ======================================================
-// SELECT MENU
+// BOTÕES
+// ======================================================
+
+if (interaction.isButton()) {
+
+// ======================================================
+// !M
+// ======================================================
+
+if (interaction.customId === "abrir_m") {
+
+if (!isDono(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas DONO",
+ephemeral: true
+});
+
+}
+
+const modal = new ModalBuilder()
+.setCustomId("modal_m")
+.setTitle("CRIAR EMBED");
+
+const texto = new TextInputBuilder()
+.setCustomId("texto")
+.setLabel("Mensagem")
+.setStyle(TextInputStyle.Paragraph);
+
+const cor = new TextInputBuilder()
+.setCustomId("cor")
+.setLabel("Cor HEX")
+.setPlaceholder("#8000ff")
+.setStyle(TextInputStyle.Short);
+
+modal.addComponents(
+new ActionRowBuilder().addComponents(texto),
+new ActionRowBuilder().addComponents(cor)
+);
+
+await interaction.showModal(modal);
+
+}
+
+// ======================================================
+// CONFIG VENDAS
+// ======================================================
+
+if (interaction.customId.startsWith("config_")) {
+
+if (!isDono(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas DONO",
+ephemeral: true
+});
+
+}
+
+const id = interaction.customId.replace("config_", "");
+
+const modal = new ModalBuilder()
+.setCustomId(`modal_config_${id}`)
+.setTitle("CONFIG VENDAS");
+
+const titulo = new TextInputBuilder()
+.setCustomId("titulo")
+.setLabel("Nome Painel")
+.setStyle(TextInputStyle.Short);
+
+const texto = new TextInputBuilder()
+.setCustomId("texto")
+.setLabel("Texto Painel")
+.setStyle(TextInputStyle.Paragraph);
+
+const produto = new TextInputBuilder()
+.setCustomId("produto")
+.setLabel("Produto")
+.setStyle(TextInputStyle.Short);
+
+const valor = new TextInputBuilder()
+.setCustomId("valor")
+.setLabel("Valor")
+.setStyle(TextInputStyle.Short);
+
+const pix = new TextInputBuilder()
+.setCustomId("pix")
+.setLabel("PIX")
+.setStyle(TextInputStyle.Short);
+
+modal.addComponents(
+new ActionRowBuilder().addComponents(titulo),
+new ActionRowBuilder().addComponents(texto),
+new ActionRowBuilder().addComponents(produto),
+new ActionRowBuilder().addComponents(valor),
+new ActionRowBuilder().addComponents(pix)
+);
+
+await interaction.showModal(modal);
+
+}
+
+}
+
+// ======================================================
+// MODAL
+// ======================================================
+
+if (interaction.isModalSubmit()) {
+
+// ======================================================
+// !M
+// ======================================================
+
+if (interaction.customId === "modal_m") {
+
+const texto =
+interaction.fields.getTextInputValue("texto");
+
+const cor =
+interaction.fields.getTextInputValue("cor");
+
+const embed = new EmbedBuilder()
+.setDescription(texto)
+.setColor(cor);
+
+await interaction.reply({
+embeds: [embed]
+});
+
+}
+
+// ======================================================
+// CONFIG VENDAS
+// ======================================================
+
+if (interaction.customId.startsWith("modal_config_")) {
+
+const id =
+interaction.customId.replace("modal_config_", "");
+
+const painel = paineis[id];
+
+painel.titulo =
+interaction.fields.getTextInputValue("titulo");
+
+painel.texto =
+interaction.fields.getTextInputValue("texto");
+
+const produto =
+interaction.fields.getTextInputValue("produto");
+
+const valor =
+interaction.fields.getTextInputValue("valor");
+
+painel.pix =
+interaction.fields.getTextInputValue("pix");
+
+painel.produtos.push({
+nome: produto,
+valor: valor
+});
+
+await interaction.reply({
+content: "✅ painel atualizado",
+ephemeral: true
+});
+
+}
+
+}
+
+// ======================================================
+// MENU
 // ======================================================
 
 if (interaction.isStringSelectMenu()) {
@@ -460,9 +656,10 @@ if (interaction.isStringSelectMenu()) {
 
 if (interaction.customId.startsWith("comprar_")) {
 
-const id = interaction.customId.replace("comprar_", "");
+const id =
+interaction.customId.replace("comprar_", "");
 
-const c = configs[id];
+const painel = paineis[id];
 
 const canal = await interaction.guild.channels.create({
 
@@ -489,7 +686,7 @@ PermissionsBitField.Flags.SendMessages
 
 });
 
-tickets[canal.id] = {
+carrinhos[canal.id] = {
 confirmado: false
 };
 
@@ -498,19 +695,13 @@ const embed = new EmbedBuilder()
 .setTitle("🛒 CARRINHO")
 
 .setDescription(`
-📦 Produto:
-${c.emoji} ${c.produto}
-
-💸 Valor:
-R$ ${c.valor}
-
 💳 PIX:
-${c.pix}
+${painel.pix}
 
-${c.textoPix}
+${painel.textoPix}
 `)
 
-.setColor(c.cor);
+.setColor(painel.cor);
 
 const pagar = new ButtonBuilder()
 .setCustomId("pagar")
@@ -552,153 +743,13 @@ ephemeral: true
 
 setTimeout(async () => {
 
-if (!tickets[canal.id]?.confirmado) {
+if (!carrinhos[canal.id]?.confirmado) {
 
 canal.delete().catch(() => {});
 
 }
 
-}, c.tempo);
-
-}
-
-// ======================================================
-// TICKET
-// ======================================================
-
-if (interaction.customId.startsWith("ticket_")) {
-
-const canal = await interaction.guild.channels.create({
-
-name: `🎫-${interaction.user.username}`,
-
-type: ChannelType.GuildText,
-
-permissionOverwrites: [
-
-{
-id: interaction.guild.roles.everyone,
-deny: [PermissionsBitField.Flags.ViewChannel]
-},
-
-{
-id: interaction.user.id,
-allow: [
-PermissionsBitField.Flags.ViewChannel,
-PermissionsBitField.Flags.SendMessages
-]
-}
-
-]
-
-});
-
-const aceitar = new ButtonBuilder()
-.setCustomId("aceitar")
-.setLabel("✅ ACEITAR/")
-.setStyle(ButtonStyle.Success);
-
-const sair = new ButtonBuilder()
-.setCustomId("sair")
-.setLabel("🚪 SAIR")
-.setStyle(ButtonStyle.Secondary);
-
-const fechar = new ButtonBuilder()
-.setCustomId("fechar")
-.setLabel("🗑️ FECHAR")
-.setStyle(ButtonStyle.Danger);
-
-const row = new ActionRowBuilder().addComponents(
-aceitar,
-sair,
-fechar
-);
-
-await canal.send({
-content: `${interaction.user}`,
-components: [row]
-});
-
-interaction.reply({
-content: `✅ ticket criado ${canal}`,
-ephemeral: true
-});
-
-}
-
-}
-
-// ======================================================
-// BOTÕES
-// ======================================================
-
-if (interaction.isButton()) {
-
-if (interaction.customId === "confirmar") {
-
-if (!isStaff(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
-
-tickets[interaction.channel.id].confirmado = true;
-
-interaction.reply({
-content: "✅ pagamento confirmado",
-ephemeral: true
-});
-
-}
-
-if (interaction.customId === "finalizar") {
-
-if (!isStaff(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
-
-interaction.channel.delete();
-
-}
-
-if (interaction.customId === "fechar") {
-
-if (!isStaff(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
-
-interaction.channel.delete();
-
-}
-
-if (interaction.customId === "aceitar") {
-
-if (!isStaff(interaction.member)) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
-
-interaction.reply({
-content: "✅ ticket assumido",
-ephemeral: true
-});
+}, painel.tempo);
 
 }
 
