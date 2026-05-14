@@ -10,9 +10,7 @@ ButtonStyle,
 StringSelectMenuBuilder
 } = require("discord.js");
 
-// TOKEN PELO RAILWAY
 const TOKEN = process.env.TOKEN;
-
 const PREFIX = "!";
 
 const client = new Client({
@@ -24,10 +22,31 @@ GatewayIntentBits.MessageContent
 });
 
 const paineis = {};
+const tickets = {};
 
 client.once("ready", () => {
 console.log(`${client.user.tag} ONLINE`);
 });
+
+// ======================================================
+// FUNÇÕES
+// ======================================================
+
+function isStaff(member) {
+
+return member.roles.cache.some(r =>
+[
+"DONO",
+"SUB DONO",
+"SUPORTE"
+].includes(r.name)
+);
+
+}
+
+// ======================================================
+// COMANDOS
+// ======================================================
 
 client.on("messageCreate", async message => {
 
@@ -37,9 +56,9 @@ if (!message.content.startsWith(PREFIX)) return;
 const args = message.content.slice(PREFIX.length).trim().split(/ +/);
 const command = args.shift().toLowerCase();
 
-// ========================================
+// ======================================================
 // SETUP
-// ========================================
+// ======================================================
 
 if (command === "setup") {
 
@@ -111,7 +130,10 @@ canais: [
 {
 categoria: "🍎 CERTIFICADO IOS",
 canais: [
-"☕・certificado・gbox"
+"☕・certificado・gbox",
+"☕・certificado・esign",
+"☕・certificado・scarlet",
+"☕・certificado・maplesigner"
 ]
 },
 
@@ -131,6 +153,26 @@ canais: [
 "🌌・holograma・android",
 "🎛️・painel・legit",
 "🎯・gerador・de・sensi・android"
+]
+},
+
+{
+categoria: "🍎 IPHONE NOVA ATUALIZAÇÃO",
+canais: [
+"🏅・ffh4x・ios・rage",
+"🏅・ffh4x・ios・legit",
+"🏅・ios・safe・menu",
+"🏅・byp4ss・full・iphone",
+"🏅・painel・iphone・safe",
+"🏅・painel・ios・premium",
+"🏅・hspescoco・todos・ios",
+"🏅・ios・drip・premium",
+"🏅・combo・apostador・ios",
+"🏅・proxy・ios・external",
+"🏅・pack・ios・fps",
+"🛠️・auxílio-ios",
+"🌌・holograma・ios",
+"🎯・gerador・de・sensi・ios"
 ]
 }
 
@@ -164,9 +206,9 @@ message.reply("✅ servidor criado");
 
 }
 
-// ========================================
-// VENDAS
-// ========================================
+// ======================================================
+// PAINEL VENDAS
+// ======================================================
 
 if (command === "vendas") {
 
@@ -174,10 +216,27 @@ const id = Date.now().toString();
 
 paineis[id] = {
 
+titulo: "🔥 PAINEL DE VENDAS",
+
+descricao: `
+✅ Compra automática
+✅ Entrega rápida
+✅ Suporte ativo
+`,
+
+imagem: "https://i.imgur.com/u7D6wzB.png",
+
+cor: "#8000ff",
+
 produto: "FFH4X ANDROID",
+
 valor: "12,72",
+
 emoji: "🏅",
-pix: "SUA_CHAVE_PIX"
+
+pix: "SUA_CHAVE_PIX",
+
+tempo: 600000
 
 };
 
@@ -185,20 +244,21 @@ const painel = paineis[id];
 
 const embed = new EmbedBuilder()
 
-.setTitle("🔥 PAINEL DE VENDAS")
+.setTitle(painel.titulo)
 
 .setDescription(`
-✅ Compra automática
-✅ Entrega rápida
-✅ Suporte ativo
+${painel.descricao}
 
-📦 ${painel.produto}
-💸 R$ ${painel.valor}
+📦 Produto:
+${painel.emoji} ${painel.produto}
+
+💸 Valor:
+R$ ${painel.valor}
 `)
 
-.setColor("#8000ff")
+.setColor(painel.cor)
 
-.setImage("https://i.imgur.com/u7D6wzB.png");
+.setImage(painel.imagem);
 
 const menu = new StringSelectMenuBuilder()
 
@@ -224,9 +284,9 @@ components: [row]
 
 }
 
-// ========================================
-// SUPORTE
-// ========================================
+// ======================================================
+// PAINEL SUPORTE
+// ======================================================
 
 if (command === "sup") {
 
@@ -234,7 +294,9 @@ const embed = new EmbedBuilder()
 
 .setTitle("🎫 SUPORTE")
 
-.setDescription("Selecione abaixo para abrir suporte")
+.setDescription(`
+Selecione abaixo para abrir suporte.
+`)
 
 .setColor("#8000ff")
 
@@ -251,19 +313,19 @@ const menu = new StringSelectMenuBuilder()
 {
 label: "SUPORTE",
 description: "Ajuda geral",
-value: "sup"
+value: "1"
 },
 
 {
 label: "SUPORTE ANDROID",
 description: "Ajuda Android",
-value: "android"
+value: "2"
 },
 
 {
 label: "SUPORTE IOS",
 description: "Ajuda IOS",
-value: "ios"
+value: "3"
 }
 
 ]);
@@ -277,9 +339,9 @@ components: [row]
 
 }
 
-// ========================================
+// ======================================================
 // LOCK
-// ========================================
+// ======================================================
 
 if (command === "lock") {
 
@@ -294,9 +356,9 @@ message.reply("🔒 canal bloqueado");
 
 }
 
-// ========================================
+// ======================================================
 // UNLOCK
-// ========================================
+// ======================================================
 
 if (command === "unlock") {
 
@@ -311,9 +373,9 @@ message.reply("🔓 canal desbloqueado");
 
 }
 
-// ========================================
+// ======================================================
 // CLEAR
-// ========================================
+// ======================================================
 
 if (command === "clear") {
 
@@ -330,17 +392,21 @@ message.channel.send(`🗑️ ${quantidade} apagadas`);
 
 });
 
-// ========================================
+// ======================================================
 // INTERAÇÕES
-// ========================================
+// ======================================================
 
 client.on("interactionCreate", async interaction => {
 
+// ======================================================
+// MENU
+// ======================================================
+
 if (interaction.isStringSelectMenu()) {
 
-// ========================================
+// ======================================================
 // COMPRAR
-// ========================================
+// ======================================================
 
 if (interaction.customId.startsWith("comprar_")) {
 
@@ -373,6 +439,10 @@ PermissionsBitField.Flags.SendMessages
 
 });
 
+tickets[canal.id] = {
+confirmado: false
+};
+
 const embed = new EmbedBuilder()
 
 .setTitle("🛒 CARRINHO")
@@ -386,9 +456,11 @@ R$ ${painel.valor}
 
 💳 PIX:
 ${painel.pix}
+
+⏰ Expira em 10 minutos
 `)
 
-.setColor("#8000ff");
+.setColor(painel.cor);
 
 const pagar = new ButtonBuilder()
 .setCustomId("pagar")
@@ -428,15 +500,25 @@ content: `✅ carrinho criado ${canal}`,
 ephemeral: true
 });
 
-setTimeout(() => {
+// ======================================================
+// AUTO DELETE
+// ======================================================
+
+setTimeout(async () => {
+
+if (!tickets[canal.id]?.confirmado) {
+
 canal.delete().catch(() => {});
-}, 600000);
 
 }
 
-// ========================================
+}, painel.tempo);
+
+}
+
+// ======================================================
 // TICKET
-// ========================================
+// ======================================================
 
 if (interaction.customId === "ticket") {
 
@@ -470,6 +552,11 @@ const aceitar = new ButtonBuilder()
 .setLabel("✅ ACEITAR")
 .setStyle(ButtonStyle.Success);
 
+const sair = new ButtonBuilder()
+.setCustomId("sair")
+.setLabel("🚪 SAIR")
+.setStyle(ButtonStyle.Secondary);
+
 const fechar = new ButtonBuilder()
 .setCustomId("fechar")
 .setLabel("🗑️ FECHAR")
@@ -477,6 +564,7 @@ const fechar = new ButtonBuilder()
 
 const row = new ActionRowBuilder().addComponents(
 aceitar,
+sair,
 fechar
 );
 
@@ -494,24 +582,15 @@ ephemeral: true
 
 }
 
+// ======================================================
+// BOTÕES
+// ======================================================
+
 if (interaction.isButton()) {
 
-if (interaction.customId === "finalizar") {
-await interaction.channel.delete();
-}
-
-if (interaction.customId === "fechar") {
-await interaction.channel.delete();
-}
-
-if (interaction.customId === "confirmar") {
-
-await interaction.reply({
-content: "✅ pagamento confirmado",
-ephemeral: true
-});
-
-}
+// ======================================================
+// PAGAR
+// ======================================================
 
 if (interaction.customId === "pagar") {
 
@@ -519,6 +598,141 @@ await interaction.reply({
 content: "💳 faça o pagamento no PIX enviado",
 ephemeral: true
 });
+
+}
+
+// ======================================================
+// SUPORTE
+// ======================================================
+
+if (interaction.customId === "suporte") {
+
+const cargo = interaction.guild.roles.cache.find(
+r => r.name === "SUPORTE"
+);
+
+if (cargo) {
+
+interaction.channel.send(`${cargo}`);
+
+}
+
+interaction.reply({
+content: "✅ suporte chamado",
+ephemeral: true
+});
+
+}
+
+// ======================================================
+// CONFIRMAR
+// ======================================================
+
+if (interaction.customId === "confirmar") {
+
+if (!isStaff(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas suporte",
+ephemeral: true
+});
+
+}
+
+tickets[interaction.channel.id].confirmado = true;
+
+await interaction.reply({
+content: "✅ pagamento confirmado",
+ephemeral: true
+});
+
+interaction.channel.send(`
+📦 pagamento confirmado.
+
+SUPORTE entregue produto agora.
+`);
+
+}
+
+// ======================================================
+// FINALIZAR
+// ======================================================
+
+if (interaction.customId === "finalizar") {
+
+if (!isStaff(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas suporte",
+ephemeral: true
+});
+
+}
+
+await interaction.channel.delete();
+
+}
+
+// ======================================================
+// ACEITAR
+// ======================================================
+
+if (interaction.customId === "aceitar") {
+
+if (!isStaff(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas suporte",
+ephemeral: true
+});
+
+}
+
+await interaction.reply({
+content: "✅ ticket assumido",
+ephemeral: true
+});
+
+}
+
+// ======================================================
+// SAIR
+// ======================================================
+
+if (interaction.customId === "sair") {
+
+if (!isStaff(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas suporte",
+ephemeral: true
+});
+
+}
+
+await interaction.reply({
+content: "🚪 suporte saiu",
+ephemeral: true
+});
+
+}
+
+// ======================================================
+// FECHAR
+// ======================================================
+
+if (interaction.customId === "fechar") {
+
+if (!isStaff(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas suporte",
+ephemeral: true
+});
+
+}
+
+await interaction.channel.delete();
 
 }
 
