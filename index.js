@@ -1,5 +1,5 @@
 // ========================================
-// GHOSTZADA BOT FULL FIX
+// INDEX.JS
 // ========================================
 
 const {
@@ -38,7 +38,6 @@ const TOKEN = process.env.TOKEN;
 
 const paineis = {};
 const tickets = {};
-const carrinhos = {};
 
 // ========================================
 // READY
@@ -98,6 +97,10 @@ args.shift().toLowerCase();
 
 if (command === "xit") {
 
+if (!message.member.permissions.has(
+PermissionsBitField.Flags.Administrator
+)) return;
+
 const cargos = [
 
 ["DONO", "#000000"],
@@ -111,7 +114,9 @@ const cargos = [
 
 for (const cargo of cargos) {
 
-if (!message.guild.roles.cache.find(r => r.name === cargo[0])) {
+if (!message.guild.roles.cache.find(
+r => r.name === cargo[0]
+)) {
 
 await message.guild.roles.create({
 name: cargo[0],
@@ -122,7 +127,124 @@ color: cargo[1]
 
 }
 
-message.reply("✅ cargos criados");
+const estrutura = [
+
+{
+categoria: "📌 RECEPÇÃO",
+canais: [
+"📢・avisos",
+"👤・crie-seu-painel",
+"🔗・url",
+"🎁・verificação",
+"🎁・rewards",
+"⚙️・atualizações",
+"📨・rede-sociais"
+]
+},
+
+{
+categoria: "❓ FAQ ( LOJA )",
+canais: [
+"⛓️・como-comprar",
+"🌐・site-oficial"
+]
+},
+
+{
+categoria: "📌 IMPORTANTE",
+canais: [
+"📜・termos",
+"📊・avaliação",
+"📊・avaliação-entregues",
+"✅・compras-entregues"
+]
+},
+
+{
+categoria: "🎫 TICKET SUPORTE",
+canais: [
+"👥・ticket",
+"🌟・avaliação-ticket"
+]
+},
+
+{
+categoria: "🍎 CERTIFICADO IOS",
+canais: [
+"☕・certificado・gbox",
+"☕・certificado・esign",
+"☕・certificado・scarlet",
+"☕・certificado・maplesigner"
+]
+},
+
+{
+categoria: "🤖 ANDROID NOVA ATUALIZAÇÃO",
+canais: [
+"🏅・m0d・4pk・andr0id",
+"🏅・ffh4xhg・android",
+"🏅・mod・safe・dripclient",
+"🏅・passador・de・replay・android",
+"🏅・ffh4xlite・android",
+"🏅・ffh4xbypass・android",
+"🏅・proxy・android・external",
+"🏅・pack・e・otimização・full",
+"🏅・combo・apostado・android",
+"🛠️・auxílio・android",
+"🌌・holograma・android",
+"🎛️・painel・legit",
+"🎯・gerador・de・sensi・android"
+]
+},
+
+{
+categoria: "🍎 IPHONE NOVA ATUALIZAÇÃO",
+canais: [
+"🏅・ffh4x・ios・rage",
+"🏅・ffh4x・ios・legit",
+"🏅・ios・safe・menu",
+"🏅・byp4ss・full・iphone",
+"🏅・painel・iphone・safe",
+"🏅・painel・ios・premium",
+"🏅・hspescoco・todos・ios",
+"🏅・ios・drip・premium",
+"🏅・combo・apostador・ios",
+"🏅・proxy・ios・external",
+"🏅・pack・ios・fps",
+"🛠️・auxílio-ios",
+"🌌・holograma・ios",
+"🎯・gerador・de・sensi・ios"
+]
+}
+
+];
+
+for (const item of estrutura) {
+
+const categoria =
+await message.guild.channels.create({
+name: item.categoria,
+type: ChannelType.GuildCategory
+});
+
+for (const canal of item.canais) {
+
+await message.guild.channels.create({
+name: canal,
+type: ChannelType.GuildText,
+parent: categoria.id
+});
+
+}
+
+}
+
+await message.guild.channels.create({
+name: "📜・logs",
+type: ChannelType.GuildText
+});
+
+message.reply("✅ servidor criado");
 
 }
 
@@ -210,79 +332,6 @@ produto
 
 paineis[id].mensagemId = painel.id;
 paineis[id].canalId = message.channel.id;
-
-}
-
-// ========================================
-// !SUP
-// ========================================
-
-if (command === "sup") {
-
-if (!isDono(message.member))
-return;
-
-const id = Date.now().toString();
-
-tickets[id] = {
-
-mensagemId: "",
-canalId: "",
-
-titulo: "🎫 SUPORTE",
-texto: "Abra suporte abaixo",
-cor: "#8000ff",
-url: ""
-
-};
-
-const embed = new EmbedBuilder()
-
-.setTitle("🎫 SUPORTE")
-
-.setDescription("Abra suporte abaixo")
-
-.setColor("#8000ff");
-
-const menu = new StringSelectMenuBuilder()
-
-.setCustomId(`ticket_${id}`)
-
-.setPlaceholder("Abrir suporte")
-
-.addOptions([
-{
-label: "SUPORTE",
-description: "Abrir ticket",
-value: "ticket"
-}
-]);
-
-const config = new ButtonBuilder()
-
-.setCustomId(`config_ticket_${id}`)
-
-.setEmoji("⚙️")
-
-.setStyle(ButtonStyle.Secondary);
-
-const painel =
-await message.channel.send({
-
-embeds: [embed],
-
-components: [
-
-new ActionRowBuilder().addComponents(menu),
-
-new ActionRowBuilder().addComponents(config)
-
-]
-
-});
-
-tickets[id].mensagemId = painel.id;
-tickets[id].canalId = message.channel.id;
 
 }
 
@@ -545,130 +594,10 @@ produtoBtn
 
 });
 
-// FIX INTERACTION
-
-if (!interaction.replied && !interaction.deferred) {
-
 await interaction.reply({
 content: "✅ painel atualizado",
 ephemeral: true
 });
-
-}
-
-}
-
-// ========================================
-// MODAL PRODUTO
-// ========================================
-
-if (interaction.customId.startsWith("modal_produto_")) {
-
-const id =
-interaction.customId.replace("modal_produto_", "");
-
-const painel = paineis[id];
-
-const produto =
-interaction.fields.getTextInputValue("produto");
-
-const valor =
-interaction.fields.getTextInputValue("valor");
-
-const emoji =
-interaction.fields.getTextInputValue("emoji");
-
-painel.produtos.push({
-nome: produto,
-valor: valor,
-emoji: emoji
-});
-
-const canal =
-client.channels.cache.get(painel.canalId);
-
-const mensagem =
-await canal.messages.fetch(
-painel.mensagemId
-);
-
-const embed = new EmbedBuilder()
-
-.setTitle(painel.titulo)
-
-.setDescription(`
-${painel.texto}
-
-💳 PIX:
-${painel.pix}
-`)
-
-.setColor(painel.cor);
-
-if (painel.url)
-embed.setImage(painel.url);
-
-const menu =
-new StringSelectMenuBuilder()
-
-.setCustomId(`comprar_${id}`)
-
-.setPlaceholder("Selecionar produto")
-
-.addOptions(
-
-painel.produtos.map((p, i) => ({
-label: p.nome,
-description: `R$ ${p.valor}`,
-emoji: p.emoji,
-value: `${i}`
-}))
-
-);
-
-const config = new ButtonBuilder()
-
-.setCustomId(`config_${id}`)
-
-.setEmoji("⚙️")
-
-.setStyle(ButtonStyle.Secondary);
-
-const produtoBtn = new ButtonBuilder()
-
-.setCustomId(`produto_${id}`)
-
-.setLabel("➕ Produto")
-
-.setStyle(ButtonStyle.Success);
-
-await mensagem.edit({
-
-embeds: [embed],
-
-components: [
-
-new ActionRowBuilder().addComponents(menu),
-
-new ActionRowBuilder().addComponents(
-config,
-produtoBtn
-)
-
-]
-
-});
-
-// FIX INTERACTION
-
-if (!interaction.replied && !interaction.deferred) {
-
-await interaction.reply({
-content: "✅ produto adicionado",
-ephemeral: true
-});
-
-}
 
 }
 
