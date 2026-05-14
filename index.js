@@ -42,9 +42,13 @@ console.log(`${client.user.tag} ONLINE`);
 
 function isDono(member) {
 
-return member.roles.cache.some(r =>
-r.name === "DONO"
+const cargo = member.guild.roles.cache.find(
+r => r.name === "DONO"
 );
+
+if (!cargo) return true;
+
+return member.roles.cache.has(cargo.id);
 
 }
 
@@ -73,13 +77,10 @@ const args = message.content.slice(PREFIX.length).trim().split(/ +/);
 const command = args.shift().toLowerCase();
 
 // ========================================
-// SETUP
+// !XIT
 // ========================================
 
-if (command === "setup") {
-
-if (!isDono(message.member))
-return message.reply("❌ apenas DONO");
+if (command === "it") {
 
 const cargos = [
 
@@ -216,12 +217,12 @@ parent: categoria.id
 
 }
 
-await message.reply("✅ servidor criado");
+message.reply("✅ servidor criado");
 
 }
 
 // ========================================
-// EMBED CUSTOM
+// !XM
 // ========================================
 
 if (command === "m") {
@@ -230,11 +231,8 @@ if (!isDono(message.member))
 return message.reply("❌ apenas DONO");
 
 const botao = new ButtonBuilder()
-
 .setCustomId("abrir_embed")
-
 .setLabel("📨 Criar Embed")
-
 .setStyle(ButtonStyle.Primary);
 
 const row = new ActionRowBuilder().addComponents(botao);
@@ -247,7 +245,7 @@ components: [row]
 }
 
 // ========================================
-// PAINEL VENDAS
+// !XVENDAS
 // ========================================
 
 if (command === "vendas") {
@@ -260,23 +258,14 @@ const id = Date.now().toString();
 paineis[id] = {
 
 titulo: "NOVO PAINEL",
-
 texto: "Configure na engrenagem",
-
 imagem: "",
-
 thumbnail: "",
-
 footer: "",
-
 cor: "#8000ff",
-
 pix: "",
-
 textoPix: "",
-
 tempo: 600000,
-
 produtos: []
 
 };
@@ -324,7 +313,7 @@ components: [row1, row2]
 }
 
 // ========================================
-// SUPORTE
+// !XSUP
 // ========================================
 
 if (command === "sup") {
@@ -335,13 +324,9 @@ return message.reply("❌ apenas DONO");
 const id = Date.now().toString();
 
 suportePaineis[id] = {
-
 titulo: "🎫 SUPORTE",
-
 texto: "Abra suporte abaixo",
-
 cor: "#8000ff"
-
 };
 
 const embed = new EmbedBuilder()
@@ -385,7 +370,7 @@ components: [row1, row2]
 }
 
 // ========================================
-// LOCK
+// !XLOCK
 // ========================================
 
 if (command === "lock") {
@@ -405,7 +390,7 @@ message.reply("🔒 bloqueado");
 }
 
 // ========================================
-// UNLOCK
+// !XUNLOCK
 // ========================================
 
 if (command === "unlock") {
@@ -425,7 +410,7 @@ message.reply("🔓 desbloqueado");
 }
 
 // ========================================
-// CLEAR
+// !XCLEAR
 // ========================================
 
 if (command === "clear") {
@@ -534,43 +519,28 @@ const modal = new ModalBuilder()
 .setTitle("CONFIG VENDAS");
 
 const titulo = new TextInputBuilder()
-
 .setCustomId("titulo")
-
 .setLabel("Nome painel")
-
 .setStyle(TextInputStyle.Short);
 
 const texto = new TextInputBuilder()
-
 .setCustomId("texto")
-
 .setLabel("Texto painel")
-
 .setStyle(TextInputStyle.Paragraph);
 
 const produto = new TextInputBuilder()
-
 .setCustomId("produto")
-
 .setLabel("Produto")
-
 .setStyle(TextInputStyle.Short);
 
 const valor = new TextInputBuilder()
-
 .setCustomId("valor")
-
 .setLabel("Valor")
-
 .setStyle(TextInputStyle.Short);
 
 const pix = new TextInputBuilder()
-
 .setCustomId("pix")
-
 .setLabel("PIX")
-
 .setStyle(TextInputStyle.Short);
 
 modal.addComponents(
@@ -606,9 +576,7 @@ const cor =
 interaction.fields.getTextInputValue("cor");
 
 const embed = new EmbedBuilder()
-
 .setDescription(texto)
-
 .setColor(cor);
 
 await interaction.reply({
@@ -652,135 +620,6 @@ await interaction.reply({
 content: "✅ painel atualizado",
 ephemeral: true
 });
-
-}
-
-}
-
-// ========================================
-// SELECT MENU
-// ========================================
-
-if (interaction.isStringSelectMenu()) {
-
-// ========================================
-// COMPRAR
-// ========================================
-
-if (interaction.customId.startsWith("comprar_")) {
-
-if (interaction.values[0] === "none") {
-
-return interaction.reply({
-content: "❌ nenhum produto",
-ephemeral: true
-});
-
-}
-
-const id =
-interaction.customId.replace("comprar_", "");
-
-const painel = paineis[id];
-
-const canal = await interaction.guild.channels.create({
-
-name: `🛒-${interaction.user.username}`,
-
-type: ChannelType.GuildText,
-
-permissionOverwrites: [
-
-{
-id: interaction.guild.roles.everyone,
-deny: [PermissionsBitField.Flags.ViewChannel]
-},
-
-{
-id: interaction.user.id,
-allow: [
-PermissionsBitField.Flags.ViewChannel,
-PermissionsBitField.Flags.SendMessages
-]
-}
-]
-
-});
-
-carrinhos[canal.id] = {
-confirmado: false
-};
-
-const embed = new EmbedBuilder()
-
-.setTitle("🛒 CARRINHO")
-
-.setDescription(`
-💳 PIX:
-${painel.pix}
-`)
-
-.setColor(painel.cor);
-
-const pagar = new ButtonBuilder()
-
-.setCustomId("pagar")
-
-.setLabel("💳 PAGAMENTO")
-
-.setStyle(ButtonStyle.Success);
-
-const suporte = new ButtonBuilder()
-
-.setCustomId("suporte")
-
-.setLabel("👤 SUPORTE")
-
-.setStyle(ButtonStyle.Primary);
-
-const confirmar = new ButtonBuilder()
-
-.setCustomId("confirmar")
-
-.setLabel("✅ CONFIRMAR")
-
-.setStyle(ButtonStyle.Secondary);
-
-const finalizar = new ButtonBuilder()
-
-.setCustomId("finalizar")
-
-.setLabel("🗑️ FINALIZAR")
-
-.setStyle(ButtonStyle.Danger);
-
-const row = new ActionRowBuilder().addComponents(
-pagar,
-suporte,
-confirmar,
-finalizar
-);
-
-await canal.send({
-content: `${interaction.user}`,
-embeds: [embed],
-components: [row]
-});
-
-interaction.reply({
-content: `✅ carrinho criado ${canal}`,
-ephemeral: true
-});
-
-setTimeout(async () => {
-
-if (!carrinhos[canal.id]?.confirmado) {
-
-canal.delete().catch(() => {});
-
-}
-
-}, painel.tempo);
 
 }
 
