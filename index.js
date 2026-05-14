@@ -10,7 +10,9 @@ ButtonStyle,
 StringSelectMenuBuilder
 } = require("discord.js");
 
-const TOKEN = "SEU_TOKEN";
+// TOKEN PELO RAILWAY
+const TOKEN = process.env.TOKEN;
+
 const PREFIX = "!";
 
 const client = new Client({
@@ -26,10 +28,6 @@ const paineis = {};
 client.once("ready", () => {
 console.log(`${client.user.tag} ONLINE`);
 });
-
-// ========================================
-// MENSAGENS
-// ========================================
 
 client.on("messageCreate", async message => {
 
@@ -134,17 +132,6 @@ canais: [
 "🎛️・painel・legit",
 "🎯・gerador・de・sensi・android"
 ]
-},
-
-{
-categoria: "📱 IPHONE NOVA ATUALIZAÇÃO",
-canais: [
-"🏅・ffh4x・ios・rage",
-"🏅・byp4ss・full・iphone",
-"🏅・painel・iphone・safe",
-"🏅・hspescoco・todos・ios",
-"🛠️・auxílio-ios"
-]
 }
 
 ];
@@ -178,7 +165,7 @@ message.reply("✅ servidor criado");
 }
 
 // ========================================
-// PAINEL VENDAS
+// VENDAS
 // ========================================
 
 if (command === "vendas") {
@@ -205,11 +192,8 @@ const embed = new EmbedBuilder()
 ✅ Entrega rápida
 ✅ Suporte ativo
 
-📦 Produto:
-${painel.emoji} ${painel.produto}
-
-💸 Valor:
-R$ ${painel.valor}
+📦 ${painel.produto}
+💸 R$ ${painel.valor}
 `)
 
 .setColor("#8000ff")
@@ -241,7 +225,7 @@ components: [row]
 }
 
 // ========================================
-// PAINEL SUPORTE
+// SUPORTE
 // ========================================
 
 if (command === "sup") {
@@ -250,9 +234,7 @@ const embed = new EmbedBuilder()
 
 .setTitle("🎫 SUPORTE")
 
-.setDescription(`
-Selecione abaixo para abrir suporte.
-`)
+.setDescription("Selecione abaixo para abrir suporte")
 
 .setColor("#8000ff")
 
@@ -354,10 +336,6 @@ message.channel.send(`🗑️ ${quantidade} apagadas`);
 
 client.on("interactionCreate", async interaction => {
 
-// ========================================
-// SELECT MENU
-// ========================================
-
 if (interaction.isStringSelectMenu()) {
 
 // ========================================
@@ -413,35 +391,23 @@ ${painel.pix}
 .setColor("#8000ff");
 
 const pagar = new ButtonBuilder()
-
 .setCustomId("pagar")
-
 .setLabel("💳 PAGAMENTO")
-
 .setStyle(ButtonStyle.Success);
 
 const suporte = new ButtonBuilder()
-
 .setCustomId("suporte")
-
 .setLabel("👤 SUPORTE")
-
 .setStyle(ButtonStyle.Primary);
 
 const confirmar = new ButtonBuilder()
-
 .setCustomId("confirmar")
-
 .setLabel("✅ CONFIRMAR")
-
 .setStyle(ButtonStyle.Secondary);
 
 const finalizar = new ButtonBuilder()
-
 .setCustomId("finalizar")
-
 .setLabel("🗑️ FINALIZAR")
-
 .setStyle(ButtonStyle.Danger);
 
 const row = new ActionRowBuilder().addComponents(
@@ -500,19 +466,13 @@ PermissionsBitField.Flags.SendMessages
 });
 
 const aceitar = new ButtonBuilder()
-
 .setCustomId("aceitar")
-
 .setLabel("✅ ACEITAR")
-
 .setStyle(ButtonStyle.Success);
 
 const fechar = new ButtonBuilder()
-
 .setCustomId("fechar")
-
 .setLabel("🗑️ FECHAR")
-
 .setStyle(ButtonStyle.Danger);
 
 const row = new ActionRowBuilder().addComponents(
@@ -534,22 +494,14 @@ ephemeral: true
 
 }
 
-// ========================================
-// BOTÕES
-// ========================================
-
 if (interaction.isButton()) {
 
 if (interaction.customId === "finalizar") {
-
 await interaction.channel.delete();
-
 }
 
 if (interaction.customId === "fechar") {
-
 await interaction.channel.delete();
-
 }
 
 if (interaction.customId === "confirmar") {
