@@ -23,19 +23,45 @@ GatewayIntentBits.MessageContent
 
 const prefix = "+";
 
-let painelConfig = {
+// ================= CONFIG GLOBAL =================
+
+let painel = {
+
 titulo: "🔥 PAINEL DE VENDAS",
-descricao: "Selecione um produto abaixo.",
+
+descricao: `
+✅ Compra automática
+✅ Entrega rápida
+✅ Suporte ativo
+`,
+
 imagem: "https://i.imgur.com/u7D6wzB.png",
+
 cor: "#8000ff",
+
 produto: "FFH4X ANDROID",
+
 valor: "12,72",
-pix: "000201010212"
+
+emoji: "🏅",
+
+pix: "000201010212",
+
+textoPix: `
+💸 Faça o pagamento via PIX abaixo.
+
+⚡ Após pagar clique em confirmar pagamento.
+`
+
 };
+
+// ================= READY =================
 
 client.once("ready", () => {
 console.log(`${client.user.tag} ONLINE`);
 });
+
+// ================= COMANDOS =================
 
 client.on("messageCreate", async message => {
 
@@ -44,6 +70,8 @@ if (!message.content.startsWith(prefix)) return;
 
 const args = message.content.slice(prefix.length).trim().split(/ +/);
 const cmd = args.shift().toLowerCase();
+
+// ================= SETUP =================
 
 if (cmd === "setup") {
 
@@ -184,26 +212,29 @@ parent: categoria.id
 
 }
 
-message.reply("✅ servidor criado");
+message.reply("✅ servidor configurado");
 
 }
+
+// ================= PAINEL VENDAS =================
 
 if (cmd === "vendas") {
 
 const embed = new EmbedBuilder()
-.setTitle(painelConfig.titulo)
-.setDescription(painelConfig.descricao)
-.setColor(painelConfig.cor)
-.setImage(painelConfig.imagem);
+.setTitle(painel.titulo)
+.setDescription(painel.descricao)
+.setColor(painel.cor)
+.setImage(painel.imagem);
 
 const menu = new StringSelectMenuBuilder()
 .setCustomId("produto")
 .setPlaceholder("Selecione um produto")
 .addOptions([
 {
-label: painelConfig.produto,
-description: `R$ ${painelConfig.valor}`,
-value: "produto1"
+label: painel.produto,
+description: `R$ ${painel.valor}`,
+emoji: painel.emoji,
+value: "produto"
 }
 ]);
 
@@ -222,13 +253,17 @@ components: [row1, row2]
 
 }
 
+// ================= SUPORTE =================
+
 if (cmd === "sup") {
 
 const embed = new EmbedBuilder()
 .setTitle("🎫 SUPORTE")
-.setDescription("Selecione uma opção abaixo.")
+.setDescription(`
+Selecione uma opção abaixo.
+`)
 .setColor("#8000ff")
-.setImage(painelConfig.imagem);
+.setImage(painel.imagem);
 
 const menu = new StringSelectMenuBuilder()
 .setCustomId("ticket")
@@ -241,12 +276,12 @@ value: "geral"
 },
 {
 label: "SUPORTE ANDROID",
-description: "Android",
+description: "Ajuda Android",
 value: "android"
 },
 {
 label: "SUPORTE IOS",
-description: "iPhone",
+description: "Ajuda IOS",
 value: "ios"
 }
 ]);
@@ -259,6 +294,8 @@ components: [row]
 });
 
 }
+
+// ================= LOCK =================
 
 if (cmd === "lock") {
 
@@ -273,6 +310,8 @@ message.reply("🔒 canal bloqueado");
 
 }
 
+// ================= UNLOCK =================
+
 if (cmd === "unlock") {
 
 await message.channel.permissionOverwrites.edit(
@@ -286,6 +325,8 @@ message.reply("🔓 canal desbloqueado");
 
 }
 
+// ================= CLEAR =================
+
 if (cmd === "clear") {
 
 const quantidade = parseInt(args[0]);
@@ -294,13 +335,17 @@ if (!quantidade) return;
 
 await message.channel.bulkDelete(quantidade, true);
 
-message.channel.send(`🗑️ apaguei ${quantidade}`);
+message.channel.send(`🗑️ apaguei ${quantidade} mensagens`);
 
 }
 
 });
 
+// ================= INTERAÇÕES =================
+
 client.on("interactionCreate", async interaction => {
+
+// ================= CONFIGURAR =================
 
 if (interaction.isButton()) {
 
@@ -308,37 +353,37 @@ if (interaction.customId === "configurar") {
 
 const modal = new ModalBuilder()
 .setCustomId("modal_config")
-.setTitle("Configurar Painel");
+.setTitle("⚙️ CONFIGURAR PAINEL");
 
 const titulo = new TextInputBuilder()
 .setCustomId("titulo")
 .setLabel("Título")
 .setStyle(TextInputStyle.Short)
-.setValue(painelConfig.titulo);
+.setValue(painel.titulo);
 
 const descricao = new TextInputBuilder()
 .setCustomId("descricao")
 .setLabel("Descrição")
 .setStyle(TextInputStyle.Paragraph)
-.setValue(painelConfig.descricao);
+.setValue(painel.descricao);
 
 const imagem = new TextInputBuilder()
 .setCustomId("imagem")
-.setLabel("URL da imagem")
+.setLabel("URL DA IMAGEM")
 .setStyle(TextInputStyle.Short)
-.setValue(painelConfig.imagem);
+.setValue(painel.imagem);
 
 const cor = new TextInputBuilder()
 .setCustomId("cor")
-.setLabel("Cor HEX")
+.setLabel("COR HEX")
 .setStyle(TextInputStyle.Short)
-.setValue(painelConfig.cor);
+.setValue(painel.cor);
 
 const produto = new TextInputBuilder()
 .setCustomId("produto")
-.setLabel("Nome do produto + valor")
-.setStyle(TextInputStyle.Short)
-.setValue(`${painelConfig.produto}|${painelConfig.valor}`);
+.setLabel("PRODUTO|VALOR|EMOJI|PIX")
+.setStyle(TextInputStyle.Paragraph)
+.setValue(`${painel.produto}|${painel.valor}|${painel.emoji}|${painel.pix}`);
 
 modal.addComponents(
 new ActionRowBuilder().addComponents(titulo),
@@ -351,6 +396,89 @@ new ActionRowBuilder().addComponents(produto)
 await interaction.showModal(modal);
 
 }
+
+// ================= PAGAMENTO =================
+
+if (interaction.customId === "pagar") {
+
+const embed = new EmbedBuilder()
+.setTitle("💳 PAGAMENTO")
+.setDescription(`
+${painel.textoPix}
+
+🔑 PIX:
+${painel.pix}
+`)
+.setColor(painel.cor);
+
+const confirmar = new ButtonBuilder()
+.setCustomId("confirmar_pagamento")
+.setLabel("✅ CONFIRMAR")
+.setStyle(ButtonStyle.Success);
+
+const suporte = new ButtonBuilder()
+.setCustomId("suporte_compra")
+.setLabel("👤 SUPORTE")
+.setStyle(ButtonStyle.Primary);
+
+const row = new ActionRowBuilder().addComponents(
+confirmar,
+suporte
+);
+
+interaction.reply({
+embeds: [embed],
+components: [row]
+});
+
+}
+
+// ================= CONFIRMAR =================
+
+if (interaction.customId === "confirmar_pagamento") {
+
+const suporte = interaction.guild.roles.cache.find(
+r => r.name === "SUPORTE"
+);
+
+const dono = interaction.guild.roles.cache.find(
+r => r.name === "DONO"
+);
+
+const sub = interaction.guild.roles.cache.find(
+r => r.name === "SUB DONO"
+);
+
+if (
+!interaction.member.roles.cache.has(suporte.id) &&
+!interaction.member.roles.cache.has(dono.id) &&
+!interaction.member.roles.cache.has(sub.id)
+) {
+
+return interaction.reply({
+content: "❌ apenas suporte",
+ephemeral: true
+});
+
+}
+
+interaction.reply("✅ pagamento confirmado");
+
+}
+
+// ================= FINALIZAR =================
+
+if (interaction.customId === "finalizar") {
+
+interaction.reply("🗑️ finalizando compra");
+
+setTimeout(() => {
+interaction.channel.delete().catch(() => {});
+}, 3000);
+
+}
+
+// ================= ACEITAR TICKET =================
 
 if (interaction.customId === "aceitar_ticket") {
 
@@ -371,38 +499,11 @@ await interaction.reply("✅ ticket aceito");
 
 }
 
+// ================= FECHAR TICKET =================
+
 if (interaction.customId === "fechar_ticket") {
 
-await interaction.reply("🗑️ fechando");
-
-setTimeout(() => {
-interaction.channel.delete().catch(() => {});
-}, 3000);
-
-}
-
-if (interaction.customId === "confirmar_pagamento") {
-
-const suporte = interaction.guild.roles.cache.find(
-r => r.name === "SUPORTE"
-);
-
-if (!interaction.member.roles.cache.has(suporte.id)) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
-
-interaction.reply("✅ pagamento confirmado");
-
-}
-
-if (interaction.customId === "finalizar_compra") {
-
-interaction.reply("🗑️ finalizando");
+interaction.reply("🗑️ fechando ticket");
 
 setTimeout(() => {
 interaction.channel.delete().catch(() => {});
@@ -411,24 +512,32 @@ interaction.channel.delete().catch(() => {});
 }
 
 }
+
+// ================= MODAL =================
 
 if (interaction.isModalSubmit()) {
 
 if (interaction.customId === "modal_config") {
 
-const produtoInfo = interaction.fields.getTextInputValue("produto").split("|");
+const produtoInfo =
+interaction.fields.getTextInputValue("produto").split("|");
 
-painelConfig = {
+painel.titulo =
+interaction.fields.getTextInputValue("titulo");
 
-titulo: interaction.fields.getTextInputValue("titulo"),
-descricao: interaction.fields.getTextInputValue("descricao"),
-imagem: interaction.fields.getTextInputValue("imagem"),
-cor: interaction.fields.getTextInputValue("cor"),
-produto: produtoInfo[0],
-valor: produtoInfo[1],
-pix: painelConfig.pix
+painel.descricao =
+interaction.fields.getTextInputValue("descricao");
 
-};
+painel.imagem =
+interaction.fields.getTextInputValue("imagem");
+
+painel.cor =
+interaction.fields.getTextInputValue("cor");
+
+painel.produto = produtoInfo[0];
+painel.valor = produtoInfo[1];
+painel.emoji = produtoInfo[2];
+painel.pix = produtoInfo[3];
 
 await interaction.reply({
 content: "✅ painel atualizado",
@@ -439,7 +548,11 @@ ephemeral: true
 
 }
 
+// ================= SELECT MENU =================
+
 if (interaction.isStringSelectMenu()) {
+
+// ================= PRODUTO =================
 
 if (interaction.customId === "produto") {
 
@@ -470,39 +583,27 @@ const embed = new EmbedBuilder()
 .setTitle("🛒 CARRINHO")
 .setDescription(`
 📦 Produto:
-${painelConfig.produto}
+${painel.emoji} ${painel.produto}
 
 💸 Valor:
-R$ ${painelConfig.valor}
+R$ ${painel.valor}
 
 📜 Leia os termos antes de comprar.
 `)
-.setColor(painelConfig.cor);
+.setColor(painel.cor);
 
 const pagar = new ButtonBuilder()
 .setCustomId("pagar")
 .setLabel("💳 PAGAMENTO")
 .setStyle(ButtonStyle.Success);
 
-const suporte = new ButtonBuilder()
-.setCustomId("chamar_suporte")
-.setLabel("👤 SUPORTE")
-.setStyle(ButtonStyle.Primary);
-
-const confirmar = new ButtonBuilder()
-.setCustomId("confirmar_pagamento")
-.setLabel("✅ CONFIRMAR")
-.setStyle(ButtonStyle.Secondary);
-
 const finalizar = new ButtonBuilder()
-.setCustomId("finalizar_compra")
+.setCustomId("finalizar")
 .setLabel("🗑️ FINALIZAR")
 .setStyle(ButtonStyle.Danger);
 
 const row = new ActionRowBuilder().addComponents(
 pagar,
-suporte,
-confirmar,
 finalizar
 );
 
@@ -522,6 +623,8 @@ canal.delete().catch(() => {});
 }, 600000);
 
 }
+
+// ================= TICKET =================
 
 if (interaction.customId === "ticket") {
 
