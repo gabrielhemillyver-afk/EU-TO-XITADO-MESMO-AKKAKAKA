@@ -14,7 +14,7 @@ TextInputStyle
 } = require("discord.js");
 
 const TOKEN = process.env.TOKEN;
-const PREFIX = "!";
+const PREFIX = "!x";
 
 const client = new Client({
 intents: [
@@ -28,17 +28,17 @@ const paineis = {};
 const carrinhos = {};
 const suportePaineis = {};
 
-// ======================================================
+// ========================================
 // READY
-// ======================================================
+// ========================================
 
 client.once("ready", () => {
 console.log(`${client.user.tag} ONLINE`);
 });
 
-// ======================================================
+// ========================================
 // FUNÇÕES
-// ======================================================
+// ========================================
 
 function isDono(member) {
 
@@ -60,9 +60,9 @@ return member.roles.cache.some(r =>
 
 }
 
-// ======================================================
+// ========================================
 // COMANDOS
-// ======================================================
+// ========================================
 
 client.on("messageCreate", async message => {
 
@@ -72,9 +72,9 @@ if (!message.content.startsWith(PREFIX)) return;
 const args = message.content.slice(PREFIX.length).trim().split(/ +/);
 const command = args.shift().toLowerCase();
 
-// ======================================================
+// ========================================
 // SETUP
-// ======================================================
+// ========================================
 
 if (command === "setup") {
 
@@ -220,56 +220,35 @@ await message.reply("✅ servidor criado");
 
 }
 
-// ======================================================
-// !M
-// ======================================================
+// ========================================
+// EMBED CUSTOM
+// ========================================
 
 if (command === "m") {
 
 if (!isDono(message.member))
 return message.reply("❌ apenas DONO");
 
-const modal = new ModalBuilder()
-.setCustomId("modal_m")
-.setTitle("CRIAR EMBED");
+const botao = new ButtonBuilder()
 
-const texto = new TextInputBuilder()
-.setCustomId("texto")
-.setLabel("Mensagem")
-.setStyle(TextInputStyle.Paragraph)
-.setRequired(true);
+.setCustomId("abrir_embed")
 
-const cor = new TextInputBuilder()
-.setCustomId("cor")
-.setLabel("Cor HEX")
-.setPlaceholder("#8000ff")
-.setStyle(TextInputStyle.Short)
-.setRequired(true);
+.setLabel("📨 Criar Embed")
 
-modal.addComponents(
-new ActionRowBuilder().addComponents(texto),
-new ActionRowBuilder().addComponents(cor)
-);
+.setStyle(ButtonStyle.Primary);
 
-await message.channel.send({
+const row = new ActionRowBuilder().addComponents(botao);
+
+message.channel.send({
 content: "Clique abaixo",
-components: [
-new ActionRowBuilder().addComponents(
-new ButtonBuilder()
-.setCustomId("abrir_m")
-.setLabel("📨 Criar")
-.setStyle(ButtonStyle.Primary)
-)
-]
+components: [row]
 });
-
-message.modalData = modal;
 
 }
 
-// ======================================================
-// VENDAS
-// ======================================================
+// ========================================
+// PAINEL VENDAS
+// ========================================
 
 if (command === "vendas") {
 
@@ -316,7 +295,15 @@ const menu = new StringSelectMenuBuilder()
 
 .setCustomId(`comprar_${id}`)
 
-.setPlaceholder("Nenhum produto");
+.setPlaceholder("Nenhum produto")
+
+.addOptions([
+{
+label: "Nenhum produto",
+description: "Configure na engrenagem",
+value: "none"
+}
+]);
 
 const engrenagem = new ButtonBuilder()
 
@@ -336,9 +323,9 @@ components: [row1, row2]
 
 }
 
-// ======================================================
+// ========================================
 // SUPORTE
-// ======================================================
+// ========================================
 
 if (command === "sup") {
 
@@ -353,13 +340,7 @@ titulo: "🎫 SUPORTE",
 
 texto: "Abra suporte abaixo",
 
-cor: "#8000ff",
-
-imagem: "",
-
-thumbnail: "",
-
-footer: ""
+cor: "#8000ff"
 
 };
 
@@ -403,14 +384,14 @@ components: [row1, row2]
 
 }
 
-// ======================================================
+// ========================================
 // LOCK
-// ======================================================
+// ========================================
 
 if (command === "lock") {
 
 if (!isStaff(message.member))
-return message.reply("❌ apenas staff");
+return message.reply("❌ apenas STAFF");
 
 await message.channel.permissionOverwrites.edit(
 message.guild.roles.everyone,
@@ -423,14 +404,14 @@ message.reply("🔒 bloqueado");
 
 }
 
-// ======================================================
+// ========================================
 // UNLOCK
-// ======================================================
+// ========================================
 
 if (command === "unlock") {
 
 if (!isStaff(message.member))
-return message.reply("❌ apenas staff");
+return message.reply("❌ apenas STAFF");
 
 await message.channel.permissionOverwrites.edit(
 message.guild.roles.everyone,
@@ -443,19 +424,19 @@ message.reply("🔓 desbloqueado");
 
 }
 
-// ======================================================
+// ========================================
 // CLEAR
-// ======================================================
+// ========================================
 
 if (command === "clear") {
 
 if (!isStaff(message.member))
-return message.reply("❌ apenas staff");
+return message.reply("❌ apenas STAFF");
 
 const quantidade = parseInt(args[0]);
 
 if (!quantidade)
-return message.reply("❌ use !clear 10");
+return message.reply("❌ use !xclear 10");
 
 await message.channel.bulkDelete(quantidade, true);
 
@@ -465,23 +446,23 @@ message.channel.send(`🗑️ ${quantidade} apagadas`);
 
 });
 
-// ======================================================
+// ========================================
 // INTERAÇÕES
-// ======================================================
+// ========================================
 
 client.on("interactionCreate", async interaction => {
 
-// ======================================================
+// ========================================
 // BOTÕES
-// ======================================================
+// ========================================
 
 if (interaction.isButton()) {
 
-// ======================================================
-// !M
-// ======================================================
+// ========================================
+// EMBED
+// ========================================
 
-if (interaction.customId === "abrir_m") {
+if (interaction.customId === "abrir_embed") {
 
 if (!isDono(interaction.member)) {
 
@@ -493,19 +474,32 @@ ephemeral: true
 }
 
 const modal = new ModalBuilder()
-.setCustomId("modal_m")
+
+.setCustomId("modal_embed")
+
 .setTitle("CRIAR EMBED");
 
 const texto = new TextInputBuilder()
+
 .setCustomId("texto")
+
 .setLabel("Mensagem")
-.setStyle(TextInputStyle.Paragraph);
+
+.setStyle(TextInputStyle.Paragraph)
+
+.setRequired(true);
 
 const cor = new TextInputBuilder()
+
 .setCustomId("cor")
+
 .setLabel("Cor HEX")
+
 .setPlaceholder("#8000ff")
-.setStyle(TextInputStyle.Short);
+
+.setStyle(TextInputStyle.Short)
+
+.setRequired(true);
 
 modal.addComponents(
 new ActionRowBuilder().addComponents(texto),
@@ -516,9 +510,9 @@ await interaction.showModal(modal);
 
 }
 
-// ======================================================
+// ========================================
 // CONFIG VENDAS
-// ======================================================
+// ========================================
 
 if (interaction.customId.startsWith("config_")) {
 
@@ -534,32 +528,49 @@ ephemeral: true
 const id = interaction.customId.replace("config_", "");
 
 const modal = new ModalBuilder()
+
 .setCustomId(`modal_config_${id}`)
+
 .setTitle("CONFIG VENDAS");
 
 const titulo = new TextInputBuilder()
+
 .setCustomId("titulo")
-.setLabel("Nome Painel")
+
+.setLabel("Nome painel")
+
 .setStyle(TextInputStyle.Short);
 
 const texto = new TextInputBuilder()
+
 .setCustomId("texto")
-.setLabel("Texto Painel")
+
+.setLabel("Texto painel")
+
 .setStyle(TextInputStyle.Paragraph);
 
 const produto = new TextInputBuilder()
+
 .setCustomId("produto")
+
 .setLabel("Produto")
+
 .setStyle(TextInputStyle.Short);
 
 const valor = new TextInputBuilder()
+
 .setCustomId("valor")
+
 .setLabel("Valor")
+
 .setStyle(TextInputStyle.Short);
 
 const pix = new TextInputBuilder()
+
 .setCustomId("pix")
+
 .setLabel("PIX")
+
 .setStyle(TextInputStyle.Short);
 
 modal.addComponents(
@@ -576,17 +587,17 @@ await interaction.showModal(modal);
 
 }
 
-// ======================================================
+// ========================================
 // MODAL
-// ======================================================
+// ========================================
 
 if (interaction.isModalSubmit()) {
 
-// ======================================================
-// !M
-// ======================================================
+// ========================================
+// EMBED
+// ========================================
 
-if (interaction.customId === "modal_m") {
+if (interaction.customId === "modal_embed") {
 
 const texto =
 interaction.fields.getTextInputValue("texto");
@@ -595,7 +606,9 @@ const cor =
 interaction.fields.getTextInputValue("cor");
 
 const embed = new EmbedBuilder()
+
 .setDescription(texto)
+
 .setColor(cor);
 
 await interaction.reply({
@@ -604,9 +617,9 @@ embeds: [embed]
 
 }
 
-// ======================================================
+// ========================================
 // CONFIG VENDAS
-// ======================================================
+// ========================================
 
 if (interaction.customId.startsWith("modal_config_")) {
 
@@ -644,17 +657,26 @@ ephemeral: true
 
 }
 
-// ======================================================
-// MENU
-// ======================================================
+// ========================================
+// SELECT MENU
+// ========================================
 
 if (interaction.isStringSelectMenu()) {
 
-// ======================================================
+// ========================================
 // COMPRAR
-// ======================================================
+// ========================================
 
 if (interaction.customId.startsWith("comprar_")) {
+
+if (interaction.values[0] === "none") {
+
+return interaction.reply({
+content: "❌ nenhum produto",
+ephemeral: true
+});
+
+}
 
 const id =
 interaction.customId.replace("comprar_", "");
@@ -681,7 +703,6 @@ PermissionsBitField.Flags.ViewChannel,
 PermissionsBitField.Flags.SendMessages
 ]
 }
-
 ]
 
 });
@@ -697,30 +718,40 @@ const embed = new EmbedBuilder()
 .setDescription(`
 💳 PIX:
 ${painel.pix}
-
-${painel.textoPix}
 `)
 
 .setColor(painel.cor);
 
 const pagar = new ButtonBuilder()
+
 .setCustomId("pagar")
+
 .setLabel("💳 PAGAMENTO")
+
 .setStyle(ButtonStyle.Success);
 
 const suporte = new ButtonBuilder()
+
 .setCustomId("suporte")
+
 .setLabel("👤 SUPORTE")
+
 .setStyle(ButtonStyle.Primary);
 
 const confirmar = new ButtonBuilder()
+
 .setCustomId("confirmar")
+
 .setLabel("✅ CONFIRMAR")
+
 .setStyle(ButtonStyle.Secondary);
 
 const finalizar = new ButtonBuilder()
+
 .setCustomId("finalizar")
+
 .setLabel("🗑️ FINALIZAR")
+
 .setStyle(ButtonStyle.Danger);
 
 const row = new ActionRowBuilder().addComponents(
