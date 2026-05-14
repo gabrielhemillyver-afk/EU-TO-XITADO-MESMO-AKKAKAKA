@@ -1,10 +1,3 @@
-// ==========================================
-// BOT ORG COMPLETO - INDEX.JS
-// PREFIXO +
-// ==========================================
-
-require("dotenv").config();
-
 const {
 Client,
 GatewayIntentBits,
@@ -13,577 +6,660 @@ ChannelType,
 EmbedBuilder,
 ActionRowBuilder,
 ButtonBuilder,
-ButtonStyle
+ButtonStyle,
+StringSelectMenuBuilder,
+ModalBuilder,
+TextInputBuilder,
+TextInputStyle,
+SlashCommandBuilder,
+REST,
+Routes
 } = require("discord.js");
+
+// ========================================
+// CONFIG
+// ========================================
+
+const TOKEN = process.env.TOKEN;
+
+const CLIENT_ID = "COLOCA_CLIENT_ID";
+
+// ========================================
+// CLIENT
+// ========================================
 
 const client = new Client({
 intents: [
 GatewayIntentBits.Guilds,
 GatewayIntentBits.GuildMessages,
-GatewayIntentBits.MessageContent,
-GatewayIntentBits.GuildMembers
+GatewayIntentBits.MessageContent
 ]
 });
 
-const prefix = "+";
+// ========================================
+// DATABASE MEMÓRIA
+// ========================================
 
-// ==========================================
-// FILAS
-// ==========================================
+const vendasPaineis = {};
+const suportePaineis = {};
 
-const filas = {
-mobile1v1: [],
-mobile2v2: [],
-mobile3v3: [],
-mobile4v4: [],
+// ========================================
+// FUNÇÃO DONO
+// ========================================
 
-misto2v2: [],
-misto3v3: [],
-misto4v4: [],
+function isDono(member) {
 
-emu1v1: [],
-emu2v2: [],
-emu3v3: [],
-emu4v4: []
-};
-
-const mediadores = [];
-
-// ==========================================
-// READY
-// ==========================================
-
-client.once("ready", () => {
-
-console.log(`✅ ${client.user.tag} ONLINE`);
-
-});
-
-// ==========================================
-// MESSAGE CREATE
-// ==========================================
-
-client.on("messageCreate", async message => {
-
-if (message.author.bot) return;
-
-if (!message.content.startsWith(prefix)) return;
-
-const args = message.content.slice(prefix.length).trim().split(/ +/);
-
-const cmd = args.shift().toLowerCase();
-
-// ==========================================
-// +ORG
-// ==========================================
-
-if (cmd === "org") {
-
-if (!message.member.permissions.has(
-PermissionsBitField.Flags.Administrator
-)) return;
-
-// ==========================================
-// CARGOS
-// ==========================================
-
-await message.guild.roles.create({
-name: "DONO",
-color: "#000000"
-});
-
-await message.guild.roles.create({
-name: "CEO",
-color: "#00ff00"
-});
-
-await message.guild.roles.create({
-name: "GERENTE",
-color: "#ff0000"
-});
-
-await message.guild.roles.create({
-name: "ADM",
-color: "#0011ff"
-});
-
-await message.guild.roles.create({
-name: "SUP",
-color: "#7a00ff"
-});
-
-await message.guild.roles.create({
-name: "SS",
-color: "#00c3ff"
-});
-
-await message.guild.roles.create({
-name: "MEDIADOR",
-color: "#ffaa00"
-});
-
-// ==========================================
-// CATEGORIAS
-// ==========================================
-
-const mobile = await message.guild.channels.create({
-name: "📱 MOBILE",
-type: ChannelType.GuildCategory
-});
-
-const misto = await message.guild.channels.create({
-name: "💻 MISTO",
-type: ChannelType.GuildCategory
-});
-
-const emulador = await message.guild.channels.create({
-name: "🖥 EMULADOR",
-type: ChannelType.GuildCategory
-});
-
-const mediador = await message.guild.channels.create({
-name: "🏦 MEDIADOR",
-type: ChannelType.GuildCategory
-});
-
-// ==========================================
-// MOBILE
-// ==========================================
-
-const mobile1v1 = await message.guild.channels.create({
-name: "🎰1x1-mobile",
-type: ChannelType.GuildText,
-parent: mobile.id
-});
-
-await message.guild.channels.create({
-name: "🎰2x2-mobile",
-type: ChannelType.GuildText,
-parent: mobile.id
-});
-
-await message.guild.channels.create({
-name: "🎰3x3-mobile",
-type: ChannelType.GuildText,
-parent: mobile.id
-});
-
-await message.guild.channels.create({
-name: "🎰4x4-mobile",
-type: ChannelType.GuildText,
-parent: mobile.id
-});
-
-// ==========================================
-// MISTO
-// ==========================================
-
-await message.guild.channels.create({
-name: "💻2x2-misto",
-type: ChannelType.GuildText,
-parent: misto.id
-});
-
-await message.guild.channels.create({
-name: "💻3x3-misto",
-type: ChannelType.GuildText,
-parent: misto.id
-});
-
-await message.guild.channels.create({
-name: "💻4x4-misto",
-type: ChannelType.GuildText,
-parent: misto.id
-});
-
-// ==========================================
-// EMULADOR
-// ==========================================
-
-await message.guild.channels.create({
-name: "🖥1x1-emulador",
-type: ChannelType.GuildText,
-parent: emulador.id
-});
-
-await message.guild.channels.create({
-name: "🖥2x2-emulador",
-type: ChannelType.GuildText,
-parent: emulador.id
-});
-
-await message.guild.channels.create({
-name: "🖥3x3-emulador",
-type: ChannelType.GuildText,
-parent: emulador.id
-});
-
-await message.guild.channels.create({
-name: "🖥4x4-emulador",
-type: ChannelType.GuildText,
-parent: emulador.id
-});
-
-// ==========================================
-// MEDIADOR
-// ==========================================
-
-await message.guild.channels.create({
-name: "👥fila-mediador",
-type: ChannelType.GuildText,
-parent: mediador.id
-});
-
-await message.guild.channels.create({
-name: "💸configurar-pix",
-type: ChannelType.GuildText,
-parent: mediador.id
-});
-
-// ==========================================
-// EMBED FILA
-// ==========================================
-
-const embed = new EmbedBuilder()
-.setColor("#00ff88")
-.setTitle("🎰 FILA 1X1 MOBILE")
-.setDescription(`
-🧊 Gelo infinito
-
-💸 VALOR: R$5
-
-👥 Jogadores:
-0/2
-`)
-.setThumbnail(message.guild.iconURL());
-
-const row = new ActionRowBuilder()
-.addComponents(
-
-new ButtonBuilder()
-.setCustomId("entrar_1x1")
-.setLabel("ENTRAR")
-.setStyle(ButtonStyle.Success),
-
-new ButtonBuilder()
-.setCustomId("sair_1x1")
-.setLabel("SAIR")
-.setStyle(ButtonStyle.Danger)
-
+return member.roles.cache.some(
+r => r.name === "DONO"
 );
 
-await mobile1v1.send({
-embeds: [embed],
-components: [row]
-});
-
-message.reply("✅ Organização criada");
-
 }
 
-// ==========================================
-// +CONFIGURAR
-// ==========================================
+// ========================================
+// SLASH
+// ========================================
 
-if (cmd === "configurar") {
+const commands = [
 
-const embed = new EmbedBuilder()
-.setColor("#00ff88")
-.setTitle("⚙️ CONFIGURAÇÃO")
-.setDescription(`
-🎰 FILAS
-⚙️ SISTEMA
-📱 SS
-🎨 APARÊNCIA
-`)
-.setThumbnail(message.guild.iconURL());
+new SlashCommandBuilder()
+.setName("setup")
+.setDescription("Criar servidor"),
 
-message.reply({
-embeds: [embed]
-});
+new SlashCommandBuilder()
+.setName("vendas")
+.setDescription("Criar painel vendas"),
 
+new SlashCommandBuilder()
+.setName("sup")
+.setDescription("Criar painel suporte"),
+
+new SlashCommandBuilder()
+.setName("lock")
+.setDescription("Bloquear canal"),
+
+new SlashCommandBuilder()
+.setName("unlock")
+.setDescription("Desbloquear canal"),
+
+new SlashCommandBuilder()
+.setName("clear")
+.setDescription("Apagar mensagens")
+.addIntegerOption(option =>
+option
+.setName("quantidade")
+.setDescription("Quantidade")
+.setRequired(true)
+)
+
+].map(cmd => cmd.toJSON());
+
+// ========================================
+// READY
+// ========================================
+
+client.once("ready", async () => {
+
+console.log(`${client.user.tag} ONLINE`);
+
+const rest = new REST({ version: "10" }).setToken(TOKEN);
+
+await rest.put(
+Routes.applicationCommands(CLIENT_ID),
+{
+body: commands
 }
+);
 
-// ==========================================
-// +MEDIADOR
-// ==========================================
-
-if (cmd === "mediador") {
-
-if (!message.member.roles.cache.some(
-r => r.name === "MEDIADOR"
-)) return;
-
-if (!mediadores.includes(message.author.id)) {
-mediadores.push(message.author.id);
-}
-
-message.reply("✅ Você entrou na fila mediador");
-
-}
-
-// ==========================================
-// +P
-// ==========================================
-
-if (cmd === "p") {
-
-const user =
-message.mentions.users.first() ||
-message.author;
-
-const embed = new EmbedBuilder()
-.setColor("#00ff88")
-.setTitle(`📊 PERFIL ${user.username}`)
-.setDescription(`
-🏆 Vitórias: 0
-
-❌ Derrotas: 0
-
-📈 Winrate: 0%
-`)
-.setThumbnail(user.displayAvatarURL());
-
-message.reply({
-embeds: [embed]
-});
-
-}
-
-// ==========================================
-// +SSMOB
-// ==========================================
-
-if (cmd === "ssmob") {
-
-const embed = new EmbedBuilder()
-.setColor("#0099ff")
-.setTitle("📱 SS MOBILE")
-.setDescription(`
-Solicitação enviada.
-`);
-
-message.reply({
-embeds: [embed]
-});
-
-}
-
-// ==========================================
-// +SSEMU
-// ==========================================
-
-if (cmd === "ssemu") {
-
-const embed = new EmbedBuilder()
-.setColor("#0099ff")
-.setTitle("💻 SS EMULADOR")
-.setDescription(`
-Solicitação enviada.
-`);
-
-message.reply({
-embeds: [embed]
-});
-
-}
-
-// ==========================================
-// +LIMPAR
-// ==========================================
-
-if (cmd === "limpar") {
-
-const msgs = await message.channel.messages.fetch();
-
-await message.channel.bulkDelete(msgs);
-
-message.channel.send("✅ Canal limpo");
-
-}
+console.log("Slash carregado.");
 
 });
 
-// ==========================================
-// BOTÕES
-// ==========================================
+// ========================================
+// INTERAÇÕES
+// ========================================
 
 client.on("interactionCreate", async interaction => {
 
-if (!interaction.isButton()) return;
+// ========================================
+// SLASH
+// ========================================
 
-// ==========================================
-// ENTRAR FILA
-// ==========================================
+if (interaction.isChatInputCommand()) {
 
-if (interaction.customId === "entrar_1x1") {
+// ========================================
+// PERMISSÃO DONO
+// ========================================
 
-if (filas.mobile1v1.includes(interaction.user.id))
+if (!isDono(interaction.member)) {
+
 return interaction.reply({
-content: "❌ Você já entrou",
+content: "❌ apenas DONO",
 ephemeral: true
 });
 
-filas.mobile1v1.push(interaction.user.id);
+}
 
-await interaction.reply({
-content: "✅ Entrou na fila",
-ephemeral: true
+// ========================================
+// SETUP
+// ========================================
+
+if (interaction.commandName === "setup") {
+
+const cargos = [
+
+["DONO", "#000000"],
+["SUB DONO", "#000000"],
+["SUPORTE", "#00008B"],
+["MOD APK", "#87CEFA"],
+["IPHONE", "#00FFFF"],
+["DISCORD.GG", "#FFFF00"]
+
+];
+
+for (const cargo of cargos) {
+
+if (!interaction.guild.roles.cache.find(r => r.name === cargo[0])) {
+
+await interaction.guild.roles.create({
+name: cargo[0],
+color: cargo[1]
 });
 
-// ==========================================
-// COMPLETOU
-// ==========================================
+}
 
-if (filas.mobile1v1.length >= 2) {
+}
 
-const p1 = filas.mobile1v1[0];
-const p2 = filas.mobile1v1[1];
+const estrutura = [
 
-filas.mobile1v1.shift();
-filas.mobile1v1.shift();
+{
+categoria: "📌 RECEPÇÃO",
+canais: [
+"📢・avisos",
+"👤・crie-seu-painel",
+"🔗・url",
+"🎁・verificação",
+"🎁・rewards",
+"⚙️・atualizações",
+"📨・rede-sociais"
+]
+},
 
-const canal = await interaction.guild.channels.create({
-name: `🎰aposta-${interaction.user.username}`,
+{
+categoria: "❓ FAQ ( LOJA )",
+canais: [
+"⛓️・como-comprar",
+"🌐・site-oficial"
+]
+},
+
+{
+categoria: "📌 IMPORTANTE",
+canais: [
+"📜・termos",
+"📊・avaliação",
+"📊・avaliação-entregues",
+"✅・compras-entregues"
+]
+},
+
+{
+categoria: "🎫 TICKET SUPORTE",
+canais: [
+"👥・ticket",
+"🌟・avaliação-ticket"
+]
+},
+
+{
+categoria: "🍎 CERTIFICADO IOS",
+canais: [
+"☕・certificado・gbox"
+]
+},
+
+{
+categoria: "🤖 ANDROID NOVA ATUALIZAÇÃO",
+canais: [
+"🏅・m0d・4pk・andr0id",
+"🏅・ffh4xhg・android",
+"🏅・mod・safe・dripclient",
+"🏅・passador・de・replay・android",
+"🏅・ffh4xlite・android",
+"🏅・ffh4xbypass・android",
+"🏅・proxy・android・external",
+"🏅・pack・e・otimização・full",
+"🏅・combo・apostado・android",
+"🛠️・auxílio・android",
+"🌌・holograma・android",
+"🎛️・painel・legit",
+"🎯・gerador・de・sensi・android"
+]
+}
+
+];
+
+for (const item of estrutura) {
+
+const categoria = await interaction.guild.channels.create({
+name: item.categoria,
+type: ChannelType.GuildCategory
+});
+
+for (const canal of item.canais) {
+
+await interaction.guild.channels.create({
+name: canal,
+type: ChannelType.GuildText,
+parent: categoria.id
+});
+
+}
+
+}
+
+await interaction.guild.channels.create({
+name: "📜・logs",
 type: ChannelType.GuildText
 });
 
+interaction.reply("✅ servidor criado");
+
+}
+
+// ========================================
+// PAINEL VENDAS
+// ========================================
+
+if (interaction.commandName === "vendas") {
+
+const id = Date.now().toString();
+
+vendasPaineis[id] = {
+
+titulo: "🔥 PAINEL DE VENDAS",
+
+descricao: `
+✅ Compra automática
+✅ Entrega rápida
+✅ Suporte ativo
+`,
+
+imagem: "https://i.imgur.com/u7D6wzB.png",
+
+cor: "#8000ff",
+
+thumbnail: "",
+
+footer: "Ghostzada Store",
+
+produto: "FFH4X ANDROID",
+
+valor: "12,72",
+
+emoji: "🏅",
+
+pix: "000201010212",
+
+textoPix: `
+💸 Faça o pagamento via PIX abaixo.
+`,
+
+categoriaCarrinho: interaction.channel.parentId,
+
+tempo: 600000
+
+};
+
+const painel = vendasPaineis[id];
+
 const embed = new EmbedBuilder()
-.setColor("#00ff88")
-.setTitle("🎰 APOSTA ENCONTRADA")
+.setTitle(painel.titulo)
+.setDescription(painel.descricao)
+.setColor(painel.cor)
+.setImage(painel.imagem)
+.setFooter({
+text: painel.footer
+});
+
+if (painel.thumbnail)
+embed.setThumbnail(painel.thumbnail);
+
+const menu = new StringSelectMenuBuilder()
+.setCustomId(`produto_${id}`)
+.setPlaceholder("Selecione um produto")
+.addOptions([
+{
+label: painel.produto,
+description: `R$ ${painel.valor}`,
+emoji: painel.emoji,
+value: "produto"
+}
+]);
+
+const config = new ButtonBuilder()
+.setCustomId(`config_venda_${id}`)
+.setEmoji("⚙️")
+.setStyle(ButtonStyle.Secondary);
+
+const row1 = new ActionRowBuilder().addComponents(menu);
+const row2 = new ActionRowBuilder().addComponents(config);
+
+interaction.reply({
+embeds: [embed],
+components: [row1, row2]
+});
+
+}
+
+// ========================================
+// SUPORTE
+// ========================================
+
+if (interaction.commandName === "sup") {
+
+const id = Date.now().toString();
+
+suportePaineis[id] = {
+
+titulo: "🎫 SUPORTE",
+
+descricao: `
+Abra suporte abaixo.
+`,
+
+imagem: "https://i.imgur.com/u7D6wzB.png",
+
+cor: "#8000ff",
+
+footer: "Ghostzada Support",
+
+op1: "SUPORTE",
+desc1: "Suporte Geral",
+
+op2: "SUPORTE ANDROID",
+desc2: "Ajuda Android",
+
+op3: "SUPORTE IOS",
+desc3: "Ajuda IOS"
+
+};
+
+const painel = suportePaineis[id];
+
+const embed = new EmbedBuilder()
+.setTitle(painel.titulo)
+.setDescription(painel.descricao)
+.setColor(painel.cor)
+.setImage(painel.imagem)
+.setFooter({
+text: painel.footer
+});
+
+const menu = new StringSelectMenuBuilder()
+.setCustomId(`ticket_${id}`)
+.setPlaceholder("Abrir suporte")
+.addOptions([
+{
+label: painel.op1,
+description: painel.desc1,
+value: "1"
+},
+{
+label: painel.op2,
+description: painel.desc2,
+value: "2"
+},
+{
+label: painel.op3,
+description: painel.desc3,
+value: "3"
+}
+]);
+
+const config = new ButtonBuilder()
+.setCustomId(`config_sup_${id}`)
+.setEmoji("⚙️")
+.setStyle(ButtonStyle.Secondary);
+
+const row1 = new ActionRowBuilder().addComponents(menu);
+const row2 = new ActionRowBuilder().addComponents(config);
+
+interaction.reply({
+embeds: [embed],
+components: [row1, row2]
+});
+
+}
+
+// ========================================
+// LOCK
+// ========================================
+
+if (interaction.commandName === "lock") {
+
+await interaction.channel.permissionOverwrites.edit(
+interaction.guild.roles.everyone,
+{
+SendMessages: false
+}
+);
+
+interaction.reply("🔒 canal bloqueado");
+
+}
+
+// ========================================
+// UNLOCK
+// ========================================
+
+if (interaction.commandName === "unlock") {
+
+await interaction.channel.permissionOverwrites.edit(
+interaction.guild.roles.everyone,
+{
+SendMessages: true
+}
+);
+
+interaction.reply("🔓 canal desbloqueado");
+
+}
+
+// ========================================
+// CLEAR
+// ========================================
+
+if (interaction.commandName === "clear") {
+
+const quantidade =
+interaction.options.getInteger("quantidade");
+
+await interaction.channel.bulkDelete(
+quantidade,
+true
+);
+
+interaction.reply(`🗑️ ${quantidade} apagadas`);
+
+}
+
+}
+
+// ========================================
+// BOTÕES
+// ========================================
+
+if (interaction.isButton()) {
+
+// ========================================
+// CONFIG VENDA
+// ========================================
+
+if (interaction.customId.startsWith("config_venda_")) {
+
+if (!isDono(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas DONO",
+ephemeral: true
+});
+
+}
+
+const id =
+interaction.customId.replace("config_venda_", "");
+
+const painel = vendasPaineis[id];
+
+const modal = new ModalBuilder()
+.setCustomId(`modal_venda_${id}`)
+.setTitle("⚙️ CONFIG VENDAS");
+
+const titulo = new TextInputBuilder()
+.setCustomId("titulo")
+.setLabel("TITULO")
+.setStyle(TextInputStyle.Short)
+.setValue(painel.titulo);
+
+const descricao = new TextInputBuilder()
+.setCustomId("descricao")
+.setLabel("DESCRIÇÃO")
+.setStyle(TextInputStyle.Paragraph)
+.setValue(painel.descricao);
+
+const imagem = new TextInputBuilder()
+.setCustomId("imagem")
+.setLabel("IMAGEM URL")
+.setStyle(TextInputStyle.Short)
+.setValue(painel.imagem);
+
+const cor = new TextInputBuilder()
+.setCustomId("cor")
+.setLabel("COR HEX")
+.setStyle(TextInputStyle.Short)
+.setValue(painel.cor);
+
+const produto = new TextInputBuilder()
+.setCustomId("produto")
+.setLabel("PRODUTO")
+.setStyle(TextInputStyle.Short)
+.setValue(painel.produto);
+
+modal.addComponents(
+new ActionRowBuilder().addComponents(titulo),
+new ActionRowBuilder().addComponents(descricao),
+new ActionRowBuilder().addComponents(imagem),
+new ActionRowBuilder().addComponents(cor),
+new ActionRowBuilder().addComponents(produto)
+);
+
+await interaction.showModal(modal);
+
+}
+
+}
+
+// ========================================
+// SELECT MENU
+// ========================================
+
+if (interaction.isStringSelectMenu()) {
+
+// ========================================
+// COMPRAR
+// ========================================
+
+if (interaction.customId.startsWith("produto_")) {
+
+const id =
+interaction.customId.replace("produto_", "");
+
+const painel = vendasPaineis[id];
+
+const canal = await interaction.guild.channels.create({
+name: `🛒-${interaction.user.username}`,
+type: ChannelType.GuildText,
+
+parent: painel.categoriaCarrinho,
+
+permissionOverwrites: [
+
+{
+id: interaction.guild.roles.everyone,
+deny: [
+PermissionsBitField.Flags.ViewChannel
+]
+},
+
+{
+id: interaction.user.id,
+allow: [
+PermissionsBitField.Flags.ViewChannel,
+PermissionsBitField.Flags.SendMessages
+]
+}
+
+]
+
+});
+
+const embed = new EmbedBuilder()
+.setTitle("🛒 CARRINHO")
 .setDescription(`
-👤 <@${p1}>
-👤 <@${p2}>
+📦 Produto:
+${painel.emoji} ${painel.produto}
 
-💸 VALOR: R$5
+💸 Valor:
+R$ ${painel.valor}
 `)
-.setThumbnail(interaction.guild.iconURL());
+.setColor(painel.cor);
 
-const row = new ActionRowBuilder()
-.addComponents(
+const pagar = new ButtonBuilder()
+.setCustomId("pagar")
+.setLabel("💳 PAGAMENTO")
+.setStyle(ButtonStyle.Success);
 
-new ButtonBuilder()
+const suporte = new ButtonBuilder()
+.setCustomId("suporte")
+.setLabel("👤 SUPORTE")
+.setStyle(ButtonStyle.Primary);
+
+const confirmar = new ButtonBuilder()
 .setCustomId("confirmar")
-.setLabel("Confirmar")
-.setStyle(ButtonStyle.Success),
+.setLabel("✅ CONFIRMAR")
+.setStyle(ButtonStyle.Secondary);
 
-new ButtonBuilder()
-.setCustomId("cancelar")
-.setLabel("Cancelar")
-.setStyle(ButtonStyle.Danger)
+const finalizar = new ButtonBuilder()
+.setCustomId("finalizar")
+.setLabel("🗑️ FINALIZAR")
+.setStyle(ButtonStyle.Danger);
 
+const row = new ActionRowBuilder().addComponents(
+pagar,
+suporte,
+confirmar,
+finalizar
 );
 
 await canal.send({
-content: `<@${p1}> <@${p2}>`,
+content: `${interaction.user}`,
 embeds: [embed],
 components: [row]
 });
 
-}
-
-}
-
-// ==========================================
-// CANCELAR
-// ==========================================
-
-if (interaction.customId === "cancelar") {
-
-await interaction.channel.delete();
-
-}
-
-// ==========================================
-// CONFIRMAR
-// ==========================================
-
-if (interaction.customId === "confirmar") {
-
-await interaction.channel.bulkDelete(100);
-
-const mediador = mediadores[0];
-
-const embed = new EmbedBuilder()
-.setColor("#ffaa00")
-.setTitle("🏦 MEDIADOR CHAMADO")
-.setDescription(`
-👨‍💼 Mediador:
-<@${mediador || interaction.user.id}>
-
-💸 Envie pagamento
-`)
-.setThumbnail(interaction.guild.iconURL());
-
-const row = new ActionRowBuilder()
-.addComponents(
-
-new ButtonBuilder()
-.setCustomId("fornecer")
-.setLabel("Fornecer Sala")
-.setStyle(ButtonStyle.Primary),
-
-new ButtonBuilder()
-.setCustomId("finalizar")
-.setLabel("Finalizar")
-.setStyle(ButtonStyle.Success)
-
-);
-
-await interaction.channel.send({
-embeds: [embed],
-components: [row]
-});
-
-}
-
-// ==========================================
-// FORNECER SALA
-// ==========================================
-
-if (interaction.customId === "fornecer") {
-
-const embed = new EmbedBuilder()
-.setColor("#00ff88")
-.setTitle("🎮 SALA FORNECIDA")
-.setDescription(`
-🆔 ID: 123456
-
-🔐 SENHA: 9999
-`)
-.setThumbnail(interaction.guild.iconURL());
-
-await interaction.reply({
-embeds: [embed]
-});
-
-}
-
-// ==========================================
-// FINALIZAR
-// ==========================================
-
-if (interaction.customId === "finalizar") {
-
-const embed = new EmbedBuilder()
-.setColor("#00ff88")
-.setTitle("🏆 APOSTA FINALIZADA")
-.setDescription(`
-🥇 Vencedor definido.
-
-💸 Pagamento enviado.
-`);
-
-await interaction.reply({
-embeds: [embed]
+interaction.reply({
+content: `✅ carrinho criado ${canal}`,
+ephemeral: true
 });
 
 setTimeout(() => {
-interaction.channel.delete();
-}, 5000);
+canal.delete().catch(() => {});
+}, painel.tempo);
+
+}
 
 }
 
 });
 
-client.login(process.env.TOKEN);
+client.login(TOKEN);
