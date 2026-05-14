@@ -10,8 +10,23 @@ ButtonStyle,
 StringSelectMenuBuilder,
 ModalBuilder,
 TextInputBuilder,
-TextInputStyle
+TextInputStyle,
+SlashCommandBuilder,
+REST,
+Routes
 } = require("discord.js");
+
+// ========================================
+// CONFIG
+// ========================================
+
+const TOKEN = process.env.TOKEN;
+
+const CLIENT_ID = "COLOCA_CLIENT_ID";
+
+// ========================================
+// CLIENT
+// ========================================
 
 const client = new Client({
 intents: [
@@ -21,59 +36,114 @@ GatewayIntentBits.MessageContent
 ]
 });
 
-const prefix = "+";
+// ========================================
+// DATABASE MEMÓRIA
+// ========================================
 
-// ================= CONFIG GLOBAL =================
+const vendasPaineis = {};
+const suportePaineis = {};
 
-let painel = {
+// ========================================
+// FUNÇÃO DONO
+// ========================================
 
-titulo: "🔥 PAINEL DE VENDAS",
+function isDono(member) {
 
-descricao: `
-✅ Compra automática
-✅ Entrega rápida
-✅ Suporte ativo
-`,
+return member.roles.cache.some(
+r => r.name === "DONO"
+);
 
-imagem: "https://i.imgur.com/u7D6wzB.png",
+}
 
-cor: "#8000ff",
+// ========================================
+// SLASH
+// ========================================
 
-produto: "FFH4X ANDROID",
+const commands = [
 
-valor: "12,72",
+new SlashCommandBuilder()
+.setName("setup")
+.setDescription("Criar servidor"),
 
-emoji: "🏅",
+new SlashCommandBuilder()
+.setName("vendas")
+.setDescription("Criar painel vendas"),
 
-pix: "000201010212",
+new SlashCommandBuilder()
+.setName("sup")
+.setDescription("Criar painel suporte"),
 
-textoPix: `
-💸 Faça o pagamento via PIX abaixo.
+new SlashCommandBuilder()
+.setName("lock")
+.setDescription("Bloquear canal"),
 
-⚡ Após pagar clique em confirmar pagamento.
-`
+new SlashCommandBuilder()
+.setName("unlock")
+.setDescription("Desbloquear canal"),
 
-};
+new SlashCommandBuilder()
+.setName("clear")
+.setDescription("Apagar mensagens")
+.addIntegerOption(option =>
+option
+.setName("quantidade")
+.setDescription("Quantidade")
+.setRequired(true)
+)
 
-// ================= READY =================
+].map(cmd => cmd.toJSON());
 
-client.once("ready", () => {
+// ========================================
+// READY
+// ========================================
+
+client.once("ready", async () => {
+
 console.log(`${client.user.tag} ONLINE`);
+
+const rest = new REST({ version: "10" }).setToken(TOKEN);
+
+await rest.put(
+Routes.applicationCommands(CLIENT_ID),
+{
+body: commands
+}
+);
+
+console.log("Slash carregado.");
+
 });
 
-// ================= COMANDOS =================
+// ========================================
+// INTERAÇÕES
+// ========================================
 
-client.on("messageCreate", async message => {
+client.on("interactionCreate", async interaction => {
 
-if (message.author.bot) return;
-if (!message.content.startsWith(prefix)) return;
+// ========================================
+// SLASH
+// ========================================
 
-const args = message.content.slice(prefix.length).trim().split(/ +/);
-const cmd = args.shift().toLowerCase();
+if (interaction.isChatInputCommand()) {
 
-// ================= SETUP =================
+// ========================================
+// PERMISSÃO DONO
+// ========================================
 
-if (cmd === "setup") {
+if (!isDono(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas DONO",
+ephemeral: true
+});
+
+}
+
+// ========================================
+// SETUP
+// ========================================
+
+if (interaction.commandName === "setup") {
 
 const cargos = [
 
@@ -88,9 +158,9 @@ const cargos = [
 
 for (const cargo of cargos) {
 
-if (!message.guild.roles.cache.find(r => r.name === cargo[0])) {
+if (!interaction.guild.roles.cache.find(r => r.name === cargo[0])) {
 
-await message.guild.roles.create({
+await interaction.guild.roles.create({
 name: cargo[0],
 color: cargo[1]
 });
@@ -164,45 +234,20 @@ canais: [
 "🎛️・painel・legit",
 "🎯・gerador・de・sensi・android"
 ]
-},
-
-{
-categoria: "📱 IPHONE NOVA ATUALIZAÇÃO",
-canais: [
-"🏅・ffh4x・ios・rage",
-"🏅・byp4ss・full・iphone",
-"🏅・painel・iphone・safe",
-"🏅・hspescoco・todos・ios",
-"🛠️・auxílio-ios"
-]
-},
-
-{
-categoria: "🛡️ BYPASS TODOS IOS",
-canais: [
-"🏅・bypass・todos・ios"
-]
-},
-
-{
-categoria: "📶 BYPASS IOS VIA WIFI",
-canais: [
-"🛜・xit・via・wifi"
-]
 }
 
 ];
 
 for (const item of estrutura) {
 
-const categoria = await message.guild.channels.create({
+const categoria = await interaction.guild.channels.create({
 name: item.categoria,
 type: ChannelType.GuildCategory
 });
 
 for (const canal of item.canais) {
 
-await message.guild.channels.create({
+await interaction.guild.channels.create({
 name: canal,
 type: ChannelType.GuildText,
 parent: categoria.id
@@ -212,22 +257,75 @@ parent: categoria.id
 
 }
 
-message.reply("✅ servidor configurado");
+await interaction.guild.channels.create({
+name: "📜・logs",
+type: ChannelType.GuildText
+});
+
+interaction.reply("✅ servidor criado");
 
 }
 
-// ================= PAINEL VENDAS =================
+// ========================================
+// PAINEL VENDAS
+// ========================================
 
-if (cmd === "vendas") {
+if (interaction.commandName === "vendas") {
+
+const id = Date.now().toString();
+
+vendasPaineis[id] = {
+
+titulo: "🔥 PAINEL DE VENDAS",
+
+descricao: `
+✅ Compra automática
+✅ Entrega rápida
+✅ Suporte ativo
+`,
+
+imagem: "https://i.imgur.com/u7D6wzB.png",
+
+cor: "#8000ff",
+
+thumbnail: "",
+
+footer: "Ghostzada Store",
+
+produto: "FFH4X ANDROID",
+
+valor: "12,72",
+
+emoji: "🏅",
+
+pix: "000201010212",
+
+textoPix: `
+💸 Faça o pagamento via PIX abaixo.
+`,
+
+categoriaCarrinho: interaction.channel.parentId,
+
+tempo: 600000
+
+};
+
+const painel = vendasPaineis[id];
 
 const embed = new EmbedBuilder()
 .setTitle(painel.titulo)
 .setDescription(painel.descricao)
 .setColor(painel.cor)
-.setImage(painel.imagem);
+.setImage(painel.imagem)
+.setFooter({
+text: painel.footer
+});
+
+if (painel.thumbnail)
+embed.setThumbnail(painel.thumbnail);
 
 const menu = new StringSelectMenuBuilder()
-.setCustomId("produto")
+.setCustomId(`produto_${id}`)
 .setPlaceholder("Selecione um produto")
 .addOptions([
 {
@@ -239,137 +337,199 @@ value: "produto"
 ]);
 
 const config = new ButtonBuilder()
-.setCustomId("configurar")
+.setCustomId(`config_venda_${id}`)
 .setEmoji("⚙️")
 .setStyle(ButtonStyle.Secondary);
 
 const row1 = new ActionRowBuilder().addComponents(menu);
 const row2 = new ActionRowBuilder().addComponents(config);
 
-message.channel.send({
+interaction.reply({
 embeds: [embed],
 components: [row1, row2]
 });
 
 }
 
-// ================= SUPORTE =================
+// ========================================
+// SUPORTE
+// ========================================
 
-if (cmd === "sup") {
+if (interaction.commandName === "sup") {
+
+const id = Date.now().toString();
+
+suportePaineis[id] = {
+
+titulo: "🎫 SUPORTE",
+
+descricao: `
+Abra suporte abaixo.
+`,
+
+imagem: "https://i.imgur.com/u7D6wzB.png",
+
+cor: "#8000ff",
+
+footer: "Ghostzada Support",
+
+op1: "SUPORTE",
+desc1: "Suporte Geral",
+
+op2: "SUPORTE ANDROID",
+desc2: "Ajuda Android",
+
+op3: "SUPORTE IOS",
+desc3: "Ajuda IOS"
+
+};
+
+const painel = suportePaineis[id];
 
 const embed = new EmbedBuilder()
-.setTitle("🎫 SUPORTE")
-.setDescription(`
-Selecione uma opção abaixo.
-`)
-.setColor("#8000ff")
-.setImage(painel.imagem);
+.setTitle(painel.titulo)
+.setDescription(painel.descricao)
+.setColor(painel.cor)
+.setImage(painel.imagem)
+.setFooter({
+text: painel.footer
+});
 
 const menu = new StringSelectMenuBuilder()
-.setCustomId("ticket")
+.setCustomId(`ticket_${id}`)
 .setPlaceholder("Abrir suporte")
 .addOptions([
 {
-label: "SUPORTE",
-description: "Suporte geral",
-value: "geral"
+label: painel.op1,
+description: painel.desc1,
+value: "1"
 },
 {
-label: "SUPORTE ANDROID",
-description: "Ajuda Android",
-value: "android"
+label: painel.op2,
+description: painel.desc2,
+value: "2"
 },
 {
-label: "SUPORTE IOS",
-description: "Ajuda IOS",
-value: "ios"
+label: painel.op3,
+description: painel.desc3,
+value: "3"
 }
 ]);
 
-const row = new ActionRowBuilder().addComponents(menu);
+const config = new ButtonBuilder()
+.setCustomId(`config_sup_${id}`)
+.setEmoji("⚙️")
+.setStyle(ButtonStyle.Secondary);
 
-message.channel.send({
+const row1 = new ActionRowBuilder().addComponents(menu);
+const row2 = new ActionRowBuilder().addComponents(config);
+
+interaction.reply({
 embeds: [embed],
-components: [row]
+components: [row1, row2]
 });
 
 }
 
-// ================= LOCK =================
+// ========================================
+// LOCK
+// ========================================
 
-if (cmd === "lock") {
+if (interaction.commandName === "lock") {
 
-await message.channel.permissionOverwrites.edit(
-message.guild.roles.everyone,
+await interaction.channel.permissionOverwrites.edit(
+interaction.guild.roles.everyone,
 {
 SendMessages: false
 }
 );
 
-message.reply("🔒 canal bloqueado");
+interaction.reply("🔒 canal bloqueado");
 
 }
 
-// ================= UNLOCK =================
+// ========================================
+// UNLOCK
+// ========================================
 
-if (cmd === "unlock") {
+if (interaction.commandName === "unlock") {
 
-await message.channel.permissionOverwrites.edit(
-message.guild.roles.everyone,
+await interaction.channel.permissionOverwrites.edit(
+interaction.guild.roles.everyone,
 {
 SendMessages: true
 }
 );
 
-message.reply("🔓 canal desbloqueado");
+interaction.reply("🔓 canal desbloqueado");
 
 }
 
-// ================= CLEAR =================
+// ========================================
+// CLEAR
+// ========================================
 
-if (cmd === "clear") {
+if (interaction.commandName === "clear") {
 
-const quantidade = parseInt(args[0]);
+const quantidade =
+interaction.options.getInteger("quantidade");
 
-if (!quantidade) return;
+await interaction.channel.bulkDelete(
+quantidade,
+true
+);
 
-await message.channel.bulkDelete(quantidade, true);
-
-message.channel.send(`🗑️ apaguei ${quantidade} mensagens`);
+interaction.reply(`🗑️ ${quantidade} apagadas`);
 
 }
 
-});
+}
 
-// ================= INTERAÇÕES =================
-
-client.on("interactionCreate", async interaction => {
-
-// ================= CONFIGURAR =================
+// ========================================
+// BOTÕES
+// ========================================
 
 if (interaction.isButton()) {
 
-if (interaction.customId === "configurar") {
+// ========================================
+// CONFIG VENDA
+// ========================================
+
+if (interaction.customId.startsWith("config_venda_")) {
+
+if (!isDono(interaction.member)) {
+
+return interaction.reply({
+content: "❌ apenas DONO",
+ephemeral: true
+});
+
+}
+
+const id =
+interaction.customId.replace("config_venda_", "");
+
+const painel = vendasPaineis[id];
 
 const modal = new ModalBuilder()
-.setCustomId("modal_config")
-.setTitle("⚙️ CONFIGURAR PAINEL");
+.setCustomId(`modal_venda_${id}`)
+.setTitle("⚙️ CONFIG VENDAS");
 
 const titulo = new TextInputBuilder()
 .setCustomId("titulo")
-.setLabel("Título")
+.setLabel("TITULO")
 .setStyle(TextInputStyle.Short)
 .setValue(painel.titulo);
 
 const descricao = new TextInputBuilder()
 .setCustomId("descricao")
-.setLabel("Descrição")
+.setLabel("DESCRIÇÃO")
 .setStyle(TextInputStyle.Paragraph)
 .setValue(painel.descricao);
 
 const imagem = new TextInputBuilder()
 .setCustomId("imagem")
-.setLabel("URL DA IMAGEM")
+.setLabel("IMAGEM URL")
 .setStyle(TextInputStyle.Short)
 .setValue(painel.imagem);
 
@@ -381,9 +541,9 @@ const cor = new TextInputBuilder()
 
 const produto = new TextInputBuilder()
 .setCustomId("produto")
-.setLabel("PRODUTO|VALOR|EMOJI|PIX")
-.setStyle(TextInputStyle.Paragraph)
-.setValue(`${painel.produto}|${painel.valor}|${painel.emoji}|${painel.pix}`);
+.setLabel("PRODUTO")
+.setStyle(TextInputStyle.Short)
+.setValue(painel.produto);
 
 modal.addComponents(
 new ActionRowBuilder().addComponents(titulo),
@@ -397,174 +557,38 @@ await interaction.showModal(modal);
 
 }
 
-// ================= PAGAMENTO =================
-
-if (interaction.customId === "pagar") {
-
-const embed = new EmbedBuilder()
-.setTitle("💳 PAGAMENTO")
-.setDescription(`
-${painel.textoPix}
-
-🔑 PIX:
-${painel.pix}
-`)
-.setColor(painel.cor);
-
-const confirmar = new ButtonBuilder()
-.setCustomId("confirmar_pagamento")
-.setLabel("✅ CONFIRMAR")
-.setStyle(ButtonStyle.Success);
-
-const suporte = new ButtonBuilder()
-.setCustomId("suporte_compra")
-.setLabel("👤 SUPORTE")
-.setStyle(ButtonStyle.Primary);
-
-const row = new ActionRowBuilder().addComponents(
-confirmar,
-suporte
-);
-
-interaction.reply({
-embeds: [embed],
-components: [row]
-});
-
 }
 
-// ================= CONFIRMAR =================
-
-if (interaction.customId === "confirmar_pagamento") {
-
-const suporte = interaction.guild.roles.cache.find(
-r => r.name === "SUPORTE"
-);
-
-const dono = interaction.guild.roles.cache.find(
-r => r.name === "DONO"
-);
-
-const sub = interaction.guild.roles.cache.find(
-r => r.name === "SUB DONO"
-);
-
-if (
-!interaction.member.roles.cache.has(suporte.id) &&
-!interaction.member.roles.cache.has(dono.id) &&
-!interaction.member.roles.cache.has(sub.id)
-) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
-
-interaction.reply("✅ pagamento confirmado");
-
-}
-
-// ================= FINALIZAR =================
-
-if (interaction.customId === "finalizar") {
-
-interaction.reply("🗑️ finalizando compra");
-
-setTimeout(() => {
-interaction.channel.delete().catch(() => {});
-}, 3000);
-
-}
-
-// ================= ACEITAR TICKET =================
-
-if (interaction.customId === "aceitar_ticket") {
-
-const suporte = interaction.guild.roles.cache.find(
-r => r.name === "SUPORTE"
-);
-
-if (!interaction.member.roles.cache.has(suporte.id)) {
-
-return interaction.reply({
-content: "❌ apenas suporte",
-ephemeral: true
-});
-
-}
-
-await interaction.reply("✅ ticket aceito");
-
-}
-
-// ================= FECHAR TICKET =================
-
-if (interaction.customId === "fechar_ticket") {
-
-interaction.reply("🗑️ fechando ticket");
-
-setTimeout(() => {
-interaction.channel.delete().catch(() => {});
-}, 3000);
-
-}
-
-}
-
-// ================= MODAL =================
-
-if (interaction.isModalSubmit()) {
-
-if (interaction.customId === "modal_config") {
-
-const produtoInfo =
-interaction.fields.getTextInputValue("produto").split("|");
-
-painel.titulo =
-interaction.fields.getTextInputValue("titulo");
-
-painel.descricao =
-interaction.fields.getTextInputValue("descricao");
-
-painel.imagem =
-interaction.fields.getTextInputValue("imagem");
-
-painel.cor =
-interaction.fields.getTextInputValue("cor");
-
-painel.produto = produtoInfo[0];
-painel.valor = produtoInfo[1];
-painel.emoji = produtoInfo[2];
-painel.pix = produtoInfo[3];
-
-await interaction.reply({
-content: "✅ painel atualizado",
-ephemeral: true
-});
-
-}
-
-}
-
-// ================= SELECT MENU =================
+// ========================================
+// SELECT MENU
+// ========================================
 
 if (interaction.isStringSelectMenu()) {
 
-// ================= PRODUTO =================
+// ========================================
+// COMPRAR
+// ========================================
 
-if (interaction.customId === "produto") {
+if (interaction.customId.startsWith("produto_")) {
+
+const id =
+interaction.customId.replace("produto_", "");
+
+const painel = vendasPaineis[id];
 
 const canal = await interaction.guild.channels.create({
 name: `🛒-${interaction.user.username}`,
 type: ChannelType.GuildText,
 
+parent: painel.categoriaCarrinho,
+
 permissionOverwrites: [
 
 {
 id: interaction.guild.roles.everyone,
-deny: [PermissionsBitField.Flags.ViewChannel]
+deny: [
+PermissionsBitField.Flags.ViewChannel
+]
 },
 
 {
@@ -587,8 +611,6 @@ ${painel.emoji} ${painel.produto}
 
 💸 Valor:
 R$ ${painel.valor}
-
-📜 Leia os termos antes de comprar.
 `)
 .setColor(painel.cor);
 
@@ -597,6 +619,16 @@ const pagar = new ButtonBuilder()
 .setLabel("💳 PAGAMENTO")
 .setStyle(ButtonStyle.Success);
 
+const suporte = new ButtonBuilder()
+.setCustomId("suporte")
+.setLabel("👤 SUPORTE")
+.setStyle(ButtonStyle.Primary);
+
+const confirmar = new ButtonBuilder()
+.setCustomId("confirmar")
+.setLabel("✅ CONFIRMAR")
+.setStyle(ButtonStyle.Secondary);
+
 const finalizar = new ButtonBuilder()
 .setCustomId("finalizar")
 .setLabel("🗑️ FINALIZAR")
@@ -604,6 +636,8 @@ const finalizar = new ButtonBuilder()
 
 const row = new ActionRowBuilder().addComponents(
 pagar,
+suporte,
+confirmar,
 finalizar
 );
 
@@ -620,88 +654,7 @@ ephemeral: true
 
 setTimeout(() => {
 canal.delete().catch(() => {});
-}, 600000);
-
-}
-
-// ================= TICKET =================
-
-if (interaction.customId === "ticket") {
-
-const suporte = interaction.guild.roles.cache.find(
-r => r.name === "SUPORTE"
-);
-
-const dono = interaction.guild.roles.cache.find(
-r => r.name === "DONO"
-);
-
-const sub = interaction.guild.roles.cache.find(
-r => r.name === "SUB DONO"
-);
-
-const canal = await interaction.guild.channels.create({
-name: `🎫-${interaction.user.username}`,
-type: ChannelType.GuildText,
-
-permissionOverwrites: [
-
-{
-id: interaction.guild.roles.everyone,
-deny: [PermissionsBitField.Flags.ViewChannel]
-},
-
-{
-id: interaction.user.id,
-allow: [
-PermissionsBitField.Flags.ViewChannel,
-PermissionsBitField.Flags.SendMessages
-]
-},
-
-{
-id: suporte.id,
-allow: [PermissionsBitField.Flags.ViewChannel]
-},
-
-{
-id: dono.id,
-allow: [PermissionsBitField.Flags.ViewChannel]
-},
-
-{
-id: sub.id,
-allow: [PermissionsBitField.Flags.ViewChannel]
-}
-
-]
-
-});
-
-const aceitar = new ButtonBuilder()
-.setCustomId("aceitar_ticket")
-.setLabel("✅ ACEITAR")
-.setStyle(ButtonStyle.Success);
-
-const fechar = new ButtonBuilder()
-.setCustomId("fechar_ticket")
-.setLabel("🗑️ FECHAR")
-.setStyle(ButtonStyle.Danger);
-
-const row = new ActionRowBuilder().addComponents(
-aceitar,
-fechar
-);
-
-await canal.send({
-content: `${interaction.user}`,
-components: [row]
-});
-
-interaction.reply({
-content: `✅ ticket criado ${canal}`,
-ephemeral: true
-});
+}, painel.tempo);
 
 }
 
@@ -709,4 +662,4 @@ ephemeral: true
 
 });
 
-client.login(process.env.TOKEN);
+client.login(TOKEN);
