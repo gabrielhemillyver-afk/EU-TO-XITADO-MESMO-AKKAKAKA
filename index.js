@@ -127,17 +127,16 @@ canais: [
 "☕・certificado・gbox",
 "🍎・ios-menu",
 "🛠️・auxílio-ios",
-"🍎・ffh4x-ios",
-"🍎・ffh4x-safe",
-"🍎・ffh4x-rage",  
-"🍎・holograma-ios",
-"🍎・proxy-ios",
-"🍎・combo-ios-apostado",
-"🍎・otimização-ios"
+"📱・ffh4x-ios",
+"📱・holograma-ios",
+"📱・proxy-ios",
+"📱・combo-ios",
+"📱・otimização-ios"
 ]
 },
+
 {
-categoria: "🤖 ANDROID NOVA ATUALIZAÇÃO",
+categoria: "🤖 ANDROID",
 canais: [
 "🏅・m0d・4pk・andr0id",
 "🏅・ffh4xhg・android",
@@ -150,6 +149,7 @@ canais: [
 "🏅・combo・apostado・android",
 "🛠️・auxílio・android",
 "🌌・holograma・android",
+"🎛️・painel・legit",
 "🎯・gerador・de・sensi・android"
 ]
 }
@@ -194,26 +194,22 @@ if (command === "m") {
 if (!isDono(message.member))
 return;
 
-const texto = args.join(" ");
+const botao = new ButtonBuilder()
 
-if (!texto)
-return message.reply(
-"❌ use !m mensagem | #cor"
-);
+.setCustomId("abrir_modal_m")
 
-const separar = texto.split("|");
+.setLabel("📨 Abrir Formulário")
 
-const mensagem = separar[0];
-const cor = separar[1] || "#8000ff";
+.setStyle(ButtonStyle.Primary);
 
-const embed = new EmbedBuilder()
+await message.channel.send({
 
-.setDescription(mensagem)
+content: "📨 clique abaixo",
 
-.setColor(cor);
+components: [
+new ActionRowBuilder().addComponents(botao)
+]
 
-message.channel.send({
-embeds: [embed]
 });
 
 }
@@ -282,6 +278,14 @@ const produto = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Success);
 
+const enviar = new ButtonBuilder()
+
+.setCustomId(`enviar_${id}`)
+
+.setLabel("📨 ENVIAR")
+
+.setStyle(ButtonStyle.Primary);
+
 const painel =
 await message.channel.send({
 
@@ -293,7 +297,8 @@ new ActionRowBuilder().addComponents(menu),
 
 new ActionRowBuilder().addComponents(
 config,
-produto
+produto,
+enviar
 )
 
 ]
@@ -314,12 +319,97 @@ paineis[id].canalId = message.channel.id;
 client.on("interactionCreate", async interaction => {
 
 // ========================================
+// FORM M
+// ========================================
+
+if (
+interaction.isButton() &&
+interaction.customId ===
+"abrir_modal_m"
+) {
+
+if (!isDono(interaction.member))
+return;
+
+const modal = new ModalBuilder()
+
+.setCustomId("modal_mensagem")
+
+.setTitle("ENVIAR MENSAGEM");
+
+const texto = new TextInputBuilder()
+
+.setCustomId("texto")
+
+.setLabel("Mensagem")
+
+.setStyle(TextInputStyle.Paragraph);
+
+const cor = new TextInputBuilder()
+
+.setCustomId("cor")
+
+.setLabel("Cor HEX")
+
+.setPlaceholder("#8000ff")
+
+.setStyle(TextInputStyle.Short);
+
+modal.addComponents(
+new ActionRowBuilder().addComponents(texto),
+new ActionRowBuilder().addComponents(cor)
+);
+
+await interaction.showModal(modal);
+
+}
+
+// ========================================
+// MODAL M
+// ========================================
+
+if (
+interaction.isModalSubmit() &&
+interaction.customId ===
+"modal_mensagem"
+) {
+
+const texto =
+interaction.fields.getTextInputValue(
+"texto"
+);
+
+const cor =
+interaction.fields.getTextInputValue(
+"cor"
+) || "#8000ff";
+
+const embed = new EmbedBuilder()
+
+.setDescription(texto)
+
+.setColor(cor);
+
+await interaction.channel.send({
+embeds: [embed]
+});
+
+await interaction.reply({
+content: "✅ enviada",
+ephemeral: true
+});
+
+}
+
+// ========================================
 // CONFIG PAINEL
 // ========================================
 
 if (
 interaction.isButton() &&
-interaction.customId.startsWith("config_")
+interaction.customId.startsWith(
+"config_"
+)
 ) {
 
 if (!isDono(interaction.member))
@@ -330,8 +420,6 @@ interaction.customId.replace(
 "config_",
 ""
 );
-
-if (!paineis[id]) return;
 
 const modal = new ModalBuilder()
 
@@ -397,7 +485,9 @@ await interaction.showModal(modal);
 
 if (
 interaction.isButton() &&
-interaction.customId.startsWith("produto_")
+interaction.customId.startsWith(
+"produto_"
+)
 ) {
 
 if (!isDono(interaction.member))
@@ -567,127 +657,13 @@ const produtoBtn = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Success);
 
-await mensagem.edit({
+const enviar = new ButtonBuilder()
 
-embeds: [embed],
+.setCustomId(`enviar_${id}`)
 
-components: [
+.setLabel("📨 ENVIAR")
 
-new ActionRowBuilder().addComponents(menu),
-
-new ActionRowBuilder().addComponents(
-config,
-produtoBtn
-)
-
-]
-
-});
-
-await interaction.reply({
-content: "✅ painel atualizado",
-ephemeral: true
-});
-
-}
-
-// ========================================
-// MODAL PRODUTO
-// ========================================
-
-if (
-interaction.isModalSubmit() &&
-interaction.customId.startsWith(
-"modal_produto_"
-)
-) {
-
-const id =
-interaction.customId.replace(
-"modal_produto_",
-""
-);
-
-const painel = paineis[id];
-
-painel.produtos.push({
-
-nome:
-interaction.fields.getTextInputValue(
-"produto"
-),
-
-valor:
-interaction.fields.getTextInputValue(
-"valor"
-),
-
-emoji:
-interaction.fields.getTextInputValue(
-"emoji"
-)
-
-});
-
-const canal =
-client.channels.cache.get(
-painel.canalId
-);
-
-const mensagem =
-await canal.messages.fetch(
-painel.mensagemId
-);
-
-const embed = new EmbedBuilder()
-
-.setTitle(painel.titulo)
-
-.setDescription(`
-${painel.texto}
-
-💳 PIX:
-${painel.pix}
-`)
-
-.setColor(painel.cor);
-
-if (painel.url)
-embed.setImage(painel.url);
-
-const menu =
-new StringSelectMenuBuilder()
-
-.setCustomId(`comprar_${id}`)
-
-.setPlaceholder("Selecionar produto")
-
-.addOptions(
-
-painel.produtos.map((p, i) => ({
-label: p.nome,
-description: `R$ ${p.valor}`,
-emoji: p.emoji,
-value: `${i}`
-}))
-
-);
-
-const config = new ButtonBuilder()
-
-.setCustomId(`config_${id}`)
-
-.setEmoji("⚙️")
-
-.setStyle(ButtonStyle.Secondary);
-
-const produtoBtn = new ButtonBuilder()
-
-.setCustomId(`produto_${id}`)
-
-.setLabel("➕ Produto")
-
-.setStyle(ButtonStyle.Success);
+.setStyle(ButtonStyle.Primary);
 
 await mensagem.edit({
 
@@ -699,7 +675,8 @@ new ActionRowBuilder().addComponents(menu),
 
 new ActionRowBuilder().addComponents(
 config,
-produtoBtn
+produtoBtn,
+enviar
 )
 
 ]
@@ -707,7 +684,7 @@ produtoBtn
 });
 
 await interaction.reply({
-content: "✅ produto adicionado",
+content: "✅ atualizado",
 ephemeral: true
 });
 
