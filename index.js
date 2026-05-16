@@ -13,39 +13,12 @@ TextInputBuilder,
 TextInputStyle
 } = require("discord.js");
 
-const tls = require("tls");
-const https = require("https");
-
-// ========================================
-// KEEP ALIVE
-// ========================================
-
-setInterval(() => {
-
-https.get("https://google.com");
-
-tls.connect({
-host: "discord.com",
-port: 443
-});
-
-}, 300000);
-
-// ========================================
-// CLIENT
-// ========================================
-
 const client = new Client({
-
 intents: [
-
 GatewayIntentBits.Guilds,
 GatewayIntentBits.GuildMessages,
-GatewayIntentBits.MessageContent,
-GatewayIntentBits.DirectMessages
-
+GatewayIntentBits.MessageContent
 ]
-
 });
 
 const PREFIX = "!";
@@ -56,9 +29,7 @@ const TOKEN = process.env.TOKEN;
 // ========================================
 
 client.once("ready", () => {
-
 console.log(`${client.user.tag} ONLINE`);
-
 });
 
 // ========================================
@@ -140,10 +111,8 @@ r => r.name === cargo[0]
 )) {
 
 await message.guild.roles.create({
-
 name: cargo[0],
 color: cargo[1]
-
 });
 
 }
@@ -210,55 +179,43 @@ canais: [
 
 ];
 
-// ========================================
-// CRIAR CATEGORIAS
-// ========================================
-
 for (const item of estrutura) {
 
 const categoria =
 await message.guild.channels.create({
-
 name: item.categoria,
 type: ChannelType.GuildCategory
-
 });
 
 for (const canal of item.canais) {
 
 await message.guild.channels.create({
-
 name: canal,
 type: ChannelType.GuildText,
 parent: categoria.id
-
 });
 
 }
 
 }
-
-// ========================================
-// LOGS
-// ========================================
 
 await message.guild.channels.create({
-
 name: "📜・logs",
 type: ChannelType.GuildText
-
 });
 
+message.reply("✅ servidor criado");
+
+}
+
 // ========================================
-// PAINEL TICKET
+// !SUP
 // ========================================
 
-const canalTicket =
-message.guild.channels.cache.find(
-c => c.name === "🎫・abrir-ticket"
-);
+if (command === "sup") {
 
-if (canalTicket) {
+if (!isDono(message.member))
+return;
 
 const embed = new EmbedBuilder()
 
@@ -310,20 +267,18 @@ value: "geral"
 
 ]);
 
-await canalTicket.send({
+await message.channel.send({
 
 embeds: [embed],
 
 components: [
+
 new ActionRowBuilder()
 .addComponents(menu)
+
 ]
 
 });
-
-}
-
-message.reply("✅ servidor criado");
 
 }
 
@@ -371,7 +326,7 @@ client.on(
 async interaction => {
 
 // ========================================
-// FORM M
+// MODAL M
 // ========================================
 
 if (
@@ -379,9 +334,6 @@ interaction.isButton() &&
 interaction.customId ===
 "abrir_modal_m"
 ) {
-
-if (!isDono(interaction.member))
-return;
 
 const modal =
 new ModalBuilder()
@@ -429,7 +381,7 @@ await interaction.showModal(modal);
 }
 
 // ========================================
-// MODAL M
+// ENVIAR M
 // ========================================
 
 if (
@@ -454,17 +406,12 @@ new EmbedBuilder()
 .setColor(cor || "#8000ff");
 
 await interaction.channel.send({
-
 embeds: [embed]
-
 });
 
 await interaction.reply({
-
 content: "✅ enviada",
-
 ephemeral: true
-
 });
 
 }
@@ -493,10 +440,6 @@ nome = "🤖・android";
 if (tipo === "geral")
 nome = "🌐・geral";
 
-// ========================================
-// CRIAR TICKET
-// ========================================
-
 const canal =
 await interaction.guild.channels.create({
 
@@ -516,7 +459,6 @@ PermissionsBitField.Flags.ViewChannel
 
 {
 id: interaction.user.id,
-
 allow: [
 PermissionsBitField.Flags.ViewChannel,
 PermissionsBitField.Flags.SendMessages,
@@ -659,11 +601,8 @@ interaction.customId ===
 if (!isStaff(interaction.member)) {
 
 return interaction.reply({
-
 content: "❌ sem permissão",
-
 ephemeral: true
-
 });
 
 }
@@ -674,11 +613,8 @@ assumiu o ticket.
 `);
 
 await interaction.reply({
-
 content: "✅ assumido",
-
 ephemeral: true
-
 });
 
 }
@@ -696,11 +632,8 @@ interaction.customId ===
 if (!isStaff(interaction.member)) {
 
 return interaction.reply({
-
 content: "❌ sem permissão",
-
 ephemeral: true
-
 });
 
 }
@@ -711,11 +644,8 @@ saiu do ticket.
 `);
 
 await interaction.reply({
-
 content: "✅ saiu",
-
 ephemeral: true
-
 });
 
 }
@@ -733,27 +663,19 @@ interaction.customId ===
 if (!isStaff(interaction.member)) {
 
 return interaction.reply({
-
 content: "❌ sem permissão",
-
 ephemeral: true
-
 });
 
 }
 
 await interaction.reply({
-
 content: "🔒 fechando...",
-
 ephemeral: true
-
 });
 
 setTimeout(() => {
-
 interaction.channel.delete();
-
 }, 3000);
 
 }
