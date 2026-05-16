@@ -17,12 +17,12 @@ const tls = require("tls");
 const https = require("https");
 
 // ========================================
-// TLS KEEP ALIVE
+// KEEP ALIVE
 // ========================================
 
 setInterval(() => {
 
-https.get("https://google.com", res => {});
+https.get("https://google.com");
 
 tls.connect({
 host: "discord.com",
@@ -179,13 +179,14 @@ canais: [
 "☕・certificado・gbox",
 "🍎・ios-menu",
 "🛠️・auxílio-ios",
-"🍎・ffh4x-ios",
-"🍎・ffh4x-safe",
-"🍎・ffh4x-rage",  
-"🍎・holograma-ios",
-"🍎・proxy-ios",
-"🍎・combo-ios-apostado",
-"🍎・otimização-ios"
+"📱・ffh4x-ios",
+"📱・ffh4x-safe",
+"📱・ffh4x-rage",
+"🌌・holograma-ios",
+"📡・proxy-ios",
+"🎯・combo-ios-apostado",
+"⚡・otimização-ios"
+]
 },
 
 {
@@ -208,6 +209,10 @@ canais: [
 }
 
 ];
+
+// ========================================
+// CRIA CATEGORIAS
+// ========================================
 
 for (const item of estrutura) {
 
@@ -232,6 +237,10 @@ parent: categoria.id
 }
 
 }
+
+// ========================================
+// LOGS
+// ========================================
 
 await message.guild.channels.create({
 
@@ -362,7 +371,7 @@ client.on(
 async interaction => {
 
 // ========================================
-// ABRIR FORM M
+// FORM M
 // ========================================
 
 if (
