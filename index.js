@@ -127,11 +127,13 @@ canais: [
 "☕・certificado・gbox",
 "🍎・ios-menu",
 "🛠️・auxílio-ios",
-"📱・ffh4x-ios",
-"📱・holograma-ios",
-"📱・proxy-ios",
-"📱・combo-ios",
-"📱・otimização-ios"
+"🍎・ffh4x-ios",
+"🍎・ffh4x-safe",
+"🍎・ffh4x-rage",  
+"🍎・holograma-ios",
+"🍎・proxy-ios",
+"🍎・combo-ios-apostado",
+"🍎・otimização-ios"
 ]
 },
 
