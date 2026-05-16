@@ -187,7 +187,6 @@ canais: [
 "🍎・combo-ios-apostado",
 "🍎・otimização-ios"
 },
-
 {
 categoria: "🤖 ANDROID",
 canais: [
