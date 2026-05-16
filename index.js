@@ -404,7 +404,7 @@ ephemeral: true
 }
 
 // ========================================
-// CONFIG PAINEL
+// CONFIG
 // ========================================
 
 if (
@@ -482,7 +482,7 @@ await interaction.showModal(modal);
 }
 
 // ========================================
-// ADD PRODUTO
+// PRODUTO
 // ========================================
 
 if (
@@ -688,6 +688,165 @@ enviar
 await interaction.reply({
 content: "✅ atualizado",
 ephemeral: true
+});
+
+}
+
+// ========================================
+// MODAL PRODUTO
+// ========================================
+
+if (
+interaction.isModalSubmit() &&
+interaction.customId.startsWith(
+"modal_produto_"
+)
+) {
+
+const id =
+interaction.customId.replace(
+"modal_produto_",
+""
+);
+
+const painel = paineis[id];
+
+painel.produtos.push({
+
+nome:
+interaction.fields.getTextInputValue(
+"produto"
+),
+
+valor:
+interaction.fields.getTextInputValue(
+"valor"
+),
+
+emoji:
+interaction.fields.getTextInputValue(
+"emoji"
+)
+
+});
+
+await interaction.reply({
+content: "✅ produto adicionado",
+ephemeral: true
+});
+
+}
+
+// ========================================
+// ENVIAR PAINEL
+// ========================================
+
+if (
+interaction.isButton() &&
+interaction.customId.startsWith(
+"enviar_"
+)
+) {
+
+if (!isDono(interaction.member))
+return;
+
+const id =
+interaction.customId.replace(
+"enviar_",
+""
+);
+
+const painel = paineis[id];
+
+if (!painel) return;
+
+const embed = new EmbedBuilder()
+
+.setTitle(
+painel.titulo || "PAINEL"
+)
+
+.setDescription(`
+${painel.texto || "SEM TEXTO"}
+
+💳 PIX:
+${painel.pix || "NÃO CONFIGURADO"}
+`)
+
+.setColor(
+painel.cor || "#8000ff"
+);
+
+if (
+painel.url &&
+painel.url.startsWith("http")
+) {
+
+embed.setImage(painel.url);
+
+}
+
+const menu =
+new StringSelectMenuBuilder()
+
+.setCustomId(`comprar_${id}`)
+
+.setPlaceholder("Selecionar produto");
+
+if (
+!painel.produtos ||
+painel.produtos.length <= 0
+) {
+
+menu.addOptions([
+{
+label: "Nenhum produto",
+description: "Adicione produto",
+value: "none"
+}
+]);
+
+} else {
+
+menu.addOptions(
+
+painel.produtos.map((p, i) => ({
+
+label:
+p.nome || "PRODUTO",
+
+description:
+`R$ ${p.valor || "0"}`,
+
+emoji:
+p.emoji || "🛒",
+
+value:
+`${i}`
+
+}))
+
+);
+
+}
+
+await interaction.channel.send({
+
+embeds: [embed],
+
+components: [
+new ActionRowBuilder().addComponents(menu)
+]
+
+});
+
+await interaction.reply({
+
+content: "✅ painel enviado",
+
+ephemeral: true
+
 });
 
 }
