@@ -13,20 +13,52 @@ TextInputBuilder,
 TextInputStyle
 } = require("discord.js");
 
+const tls = require("tls");
+const https = require("https");
+
+// ========================================
+// TLS KEEP ALIVE
+// ========================================
+
+setInterval(() => {
+
+https.get("https://google.com", res => {});
+
+tls.connect({
+host: "discord.com",
+port: 443
+});
+
+}, 300000);
+
+// ========================================
+// CLIENT
+// ========================================
+
 const client = new Client({
+
 intents: [
+
 GatewayIntentBits.Guilds,
 GatewayIntentBits.GuildMessages,
 GatewayIntentBits.MessageContent,
 GatewayIntentBits.DirectMessages
+
 ]
+
 });
 
 const PREFIX = "!";
 const TOKEN = process.env.TOKEN;
 
+// ========================================
+// READY
+// ========================================
+
 client.once("ready", () => {
+
 console.log(`${client.user.tag} ONLINE`);
+
 });
 
 // ========================================
@@ -72,7 +104,10 @@ if (message.author.bot) return;
 if (!message.content.startsWith(PREFIX)) return;
 
 const args =
-message.content.slice(PREFIX.length).trim().split(/ +/);
+message.content
+.slice(PREFIX.length)
+.trim()
+.split(/ +/);
 
 const command =
 args.shift().toLowerCase();
@@ -105,8 +140,10 @@ r => r.name === cargo[0]
 )) {
 
 await message.guild.roles.create({
+
 name: cargo[0],
 color: cargo[1]
+
 });
 
 }
@@ -131,7 +168,7 @@ canais: [
 {
 categoria: "🎫 TICKET SUPORTE",
 canais: [
-"👥・ticket",
+"🎫・abrir-ticket",
 "🌟・avaliação-ticket"
 ]
 },
@@ -149,7 +186,6 @@ canais: [
 "🍎・proxy-ios",
 "🍎・combo-ios-apostado",
 "🍎・otimização-ios"
-]
 },
 
 {
@@ -177,16 +213,20 @@ for (const item of estrutura) {
 
 const categoria =
 await message.guild.channels.create({
+
 name: item.categoria,
 type: ChannelType.GuildCategory
+
 });
 
 for (const canal of item.canais) {
 
 await message.guild.channels.create({
+
 name: canal,
 type: ChannelType.GuildText,
 parent: categoria.id
+
 });
 
 }
@@ -194,51 +234,22 @@ parent: categoria.id
 }
 
 await message.guild.channels.create({
+
 name: "📜・logs",
 type: ChannelType.GuildText
-});
-
-message.reply("✅ servidor criado");
-
-}
-
-// ========================================
-// !M
-// ========================================
-
-if (command === "m") {
-
-if (!isDono(message.member))
-return;
-
-const botao = new ButtonBuilder()
-
-.setCustomId("abrir_modal_m")
-
-.setLabel("📨 Abrir Formulário")
-
-.setStyle(ButtonStyle.Primary);
-
-await message.channel.send({
-
-content: "📨 clique abaixo",
-
-components: [
-new ActionRowBuilder().addComponents(botao)
-]
 
 });
 
-}
-
 // ========================================
-// !SUP
+// PAINEL TICKET AUTOMÁTICO
 // ========================================
 
-if (command === "sup") {
+const canalTicket =
+message.guild.channels.cache.find(
+c => c.name === "🎫・abrir-ticket"
+);
 
-if (!isDono(message.member))
-return;
+if (canalTicket) {
 
 const embed = new EmbedBuilder()
 
@@ -256,11 +267,14 @@ const embed = new EmbedBuilder()
 
 .setImage("URL_DA_IMAGEM");
 
-const menu = new StringSelectMenuBuilder()
+const menu =
+new StringSelectMenuBuilder()
 
 .setCustomId("abrir_ticket")
 
-.setPlaceholder("Selecionar suporte")
+.setPlaceholder(
+"Selecionar suporte"
+)
 
 .addOptions([
 
@@ -287,12 +301,50 @@ value: "geral"
 
 ]);
 
-await message.channel.send({
+await canalTicket.send({
 
 embeds: [embed],
 
 components: [
-new ActionRowBuilder().addComponents(menu)
+new ActionRowBuilder()
+.addComponents(menu)
+]
+
+});
+
+}
+
+message.reply("✅ servidor criado");
+
+}
+
+// ========================================
+// !M
+// ========================================
+
+if (command === "m") {
+
+if (!isDono(message.member))
+return;
+
+const botao =
+new ButtonBuilder()
+
+.setCustomId("abrir_modal_m")
+
+.setLabel("📨 Abrir Formulário")
+
+.setStyle(ButtonStyle.Primary);
+
+await message.channel.send({
+
+content: "📨 clique abaixo",
+
+components: [
+
+new ActionRowBuilder()
+.addComponents(botao)
+
 ]
 
 });
@@ -305,10 +357,12 @@ new ActionRowBuilder().addComponents(menu)
 // INTERAÇÕES
 // ========================================
 
-client.on("interactionCreate", async interaction => {
+client.on(
+"interactionCreate",
+async interaction => {
 
 // ========================================
-// !M
+// ABRIR FORM M
 // ========================================
 
 if (
@@ -320,21 +374,26 @@ interaction.customId ===
 if (!isDono(interaction.member))
 return;
 
-const modal = new ModalBuilder()
+const modal =
+new ModalBuilder()
 
 .setCustomId("modal_mensagem")
 
 .setTitle("ENVIAR MENSAGEM");
 
-const texto = new TextInputBuilder()
+const texto =
+new TextInputBuilder()
 
 .setCustomId("texto")
 
 .setLabel("Mensagem")
 
-.setStyle(TextInputStyle.Paragraph);
+.setStyle(
+TextInputStyle.Paragraph
+);
 
-const cor = new TextInputBuilder()
+const cor =
+new TextInputBuilder()
 
 .setCustomId("cor")
 
@@ -342,11 +401,18 @@ const cor = new TextInputBuilder()
 
 .setPlaceholder("#8000ff")
 
-.setStyle(TextInputStyle.Short);
+.setStyle(
+TextInputStyle.Short
+);
 
 modal.addComponents(
-new ActionRowBuilder().addComponents(texto),
-new ActionRowBuilder().addComponents(cor)
+
+new ActionRowBuilder()
+.addComponents(texto),
+
+new ActionRowBuilder()
+.addComponents(cor)
+
 );
 
 await interaction.showModal(modal);
@@ -364,28 +430,32 @@ interaction.customId ===
 ) {
 
 const texto =
-interaction.fields.getTextInputValue(
-"texto"
-);
+interaction.fields
+.getTextInputValue("texto");
 
 const cor =
-interaction.fields.getTextInputValue(
-"cor"
-) || "#8000ff";
+interaction.fields
+.getTextInputValue("cor");
 
-const embed = new EmbedBuilder()
+const embed =
+new EmbedBuilder()
 
 .setDescription(texto)
 
-.setColor(cor);
+.setColor(cor || "#8000ff");
 
 await interaction.channel.send({
+
 embeds: [embed]
+
 });
 
 await interaction.reply({
+
 content: "✅ enviada",
+
 ephemeral: true
+
 });
 
 }
@@ -414,10 +484,15 @@ nome = "🤖・android";
 if (tipo === "geral")
 nome = "🌐・geral";
 
+// ========================================
+// CRIA TICKET
+// ========================================
+
 const canal =
 await interaction.guild.channels.create({
 
-name: `${nome}-${interaction.user.username}`,
+name:
+`${nome}-${interaction.user.username}`,
 
 type: ChannelType.GuildText,
 
@@ -437,6 +512,7 @@ PermissionsBitField.Flags.ViewChannel,
 PermissionsBitField.Flags.SendMessages
 ]
 }
+
 ]
 
 });
@@ -445,7 +521,8 @@ PermissionsBitField.Flags.SendMessages
 // BOTÕES
 // ========================================
 
-const assumir = new ButtonBuilder()
+const assumir =
+new ButtonBuilder()
 
 .setCustomId("assumir_ticket")
 
@@ -453,7 +530,8 @@ const assumir = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Success);
 
-const sair = new ButtonBuilder()
+const sair =
+new ButtonBuilder()
 
 .setCustomId("sair_ticket")
 
@@ -461,7 +539,8 @@ const sair = new ButtonBuilder()
 
 .setStyle(ButtonStyle.Secondary);
 
-const fechar = new ButtonBuilder()
+const fechar =
+new ButtonBuilder()
 
 .setCustomId("fechar_ticket")
 
@@ -473,7 +552,8 @@ const fechar = new ButtonBuilder()
 // EMBED TICKET
 // ========================================
 
-const embed = new EmbedBuilder()
+const embed =
+new EmbedBuilder()
 
 .setTitle("🎫 TICKET ABERTO")
 
@@ -497,7 +577,8 @@ embeds: [embed],
 
 components: [
 
-new ActionRowBuilder().addComponents(
+new ActionRowBuilder()
+.addComponents(
 assumir,
 sair,
 fechar
@@ -509,7 +590,8 @@ fechar
 
 await interaction.reply({
 
-content: `✅ ticket criado: ${canal}`,
+content:
+`✅ ticket criado: ${canal}`,
 
 ephemeral: true
 
@@ -530,14 +612,18 @@ interaction.customId ===
 if (!isStaff(interaction.member)) {
 
 return interaction.reply({
+
 content: "❌ sem permissão",
+
 ephemeral: true
+
 });
 
 }
 
 await interaction.channel.send(`
-✅ ${interaction.user} assumiu o ticket.
+✅ ${interaction.user}
+assumiu o ticket.
 `);
 
 // ========================================
@@ -545,28 +631,34 @@ await interaction.channel.send(`
 // ========================================
 
 const usuario =
-interaction.channel.permissionOverwrites.cache
+interaction.channel
+.permissionOverwrites.cache
 .filter(p => p.type === 1)
 .first();
 
 if (usuario) {
 
 const user =
-await client.users.fetch(usuario.id);
+await client.users.fetch(
+usuario.id
+);
 
-const embed = new EmbedBuilder()
+const embed =
+new EmbedBuilder()
 
 .setDescription(`
 👋 Olá ${user.username},
 
-🔔 Seu ticket recebeu uma atualização. 😄
+🔔 Seu ticket recebeu
+uma atualização 😄
 `)
 
 .setColor("#8000ff");
 
-const botao = new ButtonBuilder()
+const botao =
+new ButtonBuilder()
 
-.setLabel("Ir para o Ticket")
+.setLabel("Ir para Ticket")
 
 .setStyle(ButtonStyle.Link)
 
@@ -579,7 +671,10 @@ await user.send({
 embeds: [embed],
 
 components: [
-new ActionRowBuilder().addComponents(botao)
+
+new ActionRowBuilder()
+.addComponents(botao)
+
 ]
 
 });
@@ -587,8 +682,11 @@ new ActionRowBuilder().addComponents(botao)
 }
 
 await interaction.reply({
-content: "✅ ticket assumido",
+
+content: "✅ assumido",
+
 ephemeral: true
+
 });
 
 }
@@ -606,19 +704,26 @@ interaction.customId ===
 if (!isStaff(interaction.member)) {
 
 return interaction.reply({
+
 content: "❌ sem permissão",
+
 ephemeral: true
+
 });
 
 }
 
 await interaction.channel.send(`
-🚪 ${interaction.user} saiu do ticket.
+🚪 ${interaction.user}
+saiu do ticket.
 `);
 
 await interaction.reply({
+
 content: "✅ saiu",
+
 ephemeral: true
+
 });
 
 }
@@ -636,15 +741,21 @@ interaction.customId ===
 if (!isStaff(interaction.member)) {
 
 return interaction.reply({
+
 content: "❌ sem permissão",
+
 ephemeral: true
+
 });
 
 }
 
 await interaction.reply({
-content: "🔒 fechando ticket...",
+
+content: "🔒 fechando...",
+
 ephemeral: true
+
 });
 
 setTimeout(() => {
