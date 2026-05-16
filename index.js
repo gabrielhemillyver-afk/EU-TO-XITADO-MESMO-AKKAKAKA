@@ -211,7 +211,7 @@ canais: [
 ];
 
 // ========================================
-// CRIA CATEGORIAS
+// CRIAR CATEGORIAS
 // ========================================
 
 for (const item of estrutura) {
@@ -250,7 +250,7 @@ type: ChannelType.GuildText
 });
 
 // ========================================
-// PAINEL TICKET AUTOMÁTICO
+// PAINEL TICKET
 // ========================================
 
 const canalTicket =
@@ -494,7 +494,7 @@ if (tipo === "geral")
 nome = "🌐・geral";
 
 // ========================================
-// CRIA TICKET
+// CRIAR TICKET
 // ========================================
 
 const canal =
@@ -516,9 +516,47 @@ PermissionsBitField.Flags.ViewChannel
 
 {
 id: interaction.user.id,
+
 allow: [
 PermissionsBitField.Flags.ViewChannel,
-PermissionsBitField.Flags.SendMessages
+PermissionsBitField.Flags.SendMessages,
+PermissionsBitField.Flags.ReadMessageHistory
+]
+},
+
+{
+id: interaction.guild.roles.cache.find(
+r => r.name === "SUPORTE"
+)?.id,
+
+allow: [
+PermissionsBitField.Flags.ViewChannel,
+PermissionsBitField.Flags.SendMessages,
+PermissionsBitField.Flags.ReadMessageHistory
+]
+},
+
+{
+id: interaction.guild.roles.cache.find(
+r => r.name === "DONO"
+)?.id,
+
+allow: [
+PermissionsBitField.Flags.ViewChannel,
+PermissionsBitField.Flags.SendMessages,
+PermissionsBitField.Flags.ReadMessageHistory
+]
+},
+
+{
+id: interaction.guild.roles.cache.find(
+r => r.name === "SUB DONO"
+)?.id,
+
+allow: [
+PermissionsBitField.Flags.ViewChannel,
+PermissionsBitField.Flags.SendMessages,
+PermissionsBitField.Flags.ReadMessageHistory
 ]
 }
 
@@ -634,61 +672,6 @@ await interaction.channel.send(`
 ✅ ${interaction.user}
 assumiu o ticket.
 `);
-
-// ========================================
-// PRIVADO
-// ========================================
-
-const usuario =
-interaction.channel
-.permissionOverwrites.cache
-.filter(p => p.type === 1)
-.first();
-
-if (usuario) {
-
-const user =
-await client.users.fetch(
-usuario.id
-);
-
-const embed =
-new EmbedBuilder()
-
-.setDescription(`
-👋 Olá ${user.username},
-
-🔔 Seu ticket recebeu
-uma atualização 😄
-`)
-
-.setColor("#8000ff");
-
-const botao =
-new ButtonBuilder()
-
-.setLabel("Ir para Ticket")
-
-.setStyle(ButtonStyle.Link)
-
-.setURL(
-`https://discord.com/channels/${interaction.guild.id}/${interaction.channel.id}`
-);
-
-await user.send({
-
-embeds: [embed],
-
-components: [
-
-new ActionRowBuilder()
-.addComponents(botao)
-
-]
-
-});
-
-}
 
 await interaction.reply({
 
